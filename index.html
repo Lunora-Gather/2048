@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2048: Zen Synthesis</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=5">
+</head>
+<body class="dark-mode"> <!-- Default to Dark Mode -->
+    <!-- Ambient light reflection -->
+    <div class="ambient-glow"></div>
+
+    <!-- Interactive Background Constellation Canvas -->
+    <canvas id="bg-canvas" class="bg-canvas"></canvas>
+
+    <div class="zen-wrapper">
+        <div class="zen-container">
+        <!-- Top Navigation & Theme Toggle -->
+        <header class="zen-header">
+            <div class="brand">
+                <h1 class="logo">2048</h1>
+                <span class="badge">ZEN</span>
+            </div>
+            
+            <div class="header-controls">
+                <!-- Sound Toggle -->
+                <button id="btn-sound" class="icon-btn" title="Toggle Sounds">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                
+                <!-- Dark/Light Switcher -->
+                <button id="btn-theme-toggle" class="theme-toggle-btn" title="Switch Interface Mode">
+                    <div class="toggle-track">
+                        <div class="toggle-thumb">
+                            <i class="fa-solid fa-moon dark-icon"></i>
+                            <i class="fa-solid fa-sun light-icon"></i>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- Sidebar Drawers triggers -->
+                <button id="btn-achievements-trigger" class="icon-btn" title="Milestones">
+                    <i class="fa-solid fa-award"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Display Deck (Scores and Main Options) -->
+        <section class="display-deck">
+            <div class="score-container">
+                <div class="score-card current">
+                    <span class="label">SCORE</span>
+                    <span id="current-score" class="value">0</span>
+                    <div id="score-addition-container" class="score-addition-container"></div>
+                </div>
+                <div class="score-card best">
+                    <span class="label">BEST</span>
+                    <span id="best-score" class="value">0</span>
+                </div>
+            </div>
+
+            <div class="quick-settings">
+                <div class="select-pill">
+                    <select id="grid-size">
+                        <option value="3">3 × 3</option>
+                        <option value="4" selected>4 × 4</option>
+                        <option value="5">5 × 5</option>
+                        <option value="6">6 × 6</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-arrow"></i>
+                </div>
+
+                <div class="select-pill">
+                    <select id="theme-select">
+                        <option value="cyberpunk" selected>Cyberpunk</option>
+                        <option value="classic">Retro Gold</option>
+                        <option value="pastel">Pastel Dream</option>
+                        <option value="monochrome">Minimalist</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-arrow"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Interactive Board Deck -->
+        <main class="board-deck">
+            <div class="board-frame">
+                <div id="board" class="matrix-board size-4">
+                    <!-- Dynamic grid backgrounds and active tiles -->
+                </div>
+
+                <!-- Particle FX Canvas overlay -->
+                <canvas id="particle-canvas" class="particle-overlay"></canvas>
+
+                <!-- Overlay Panels -->
+                <div id="game-over-overlay" class="overlay hidden">
+                    <div class="overlay-content">
+                        <div class="blur-box"></div>
+                        <i class="fa-solid fa-circle-exclamation status-icon warning"></i>
+                        <h2>Board Jammed</h2>
+                        <p>No valid synthesis combinations remain on the matrix.</p>
+                        <button id="btn-retry" class="btn btn-primary">Reset Board</button>
+                    </div>
+                </div>
+
+                <div id="game-win-overlay" class="overlay hidden">
+                    <div class="overlay-content win">
+                        <div class="blur-box"></div>
+                        <i class="fa-solid fa-circle-check status-icon success animate-bounce"></i>
+                        <h2>Zen Core Synthesized</h2>
+                        <p>Critical 2048 threshold reached. Continue system run?</p>
+                        <div class="button-row">
+                            <button id="btn-keep-going" class="btn btn-secondary">Keep Going</button>
+                            <button id="btn-win-restart" class="btn btn-primary">New Game</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- System Stats Bar -->
+        <section class="stats-deck">
+            <div class="stat-pill">
+                <span class="label"><i class="fa-regular fa-clock"></i> UPTIME</span>
+                <span id="stat-time" class="value">00:00</span>
+            </div>
+            <div class="stat-pill">
+                <span class="label"><i class="fa-solid fa-code-merge"></i> CYCLES</span>
+                <span id="stat-moves" class="value">0</span>
+            </div>
+            <div class="stat-pill">
+                <span class="label"><i class="fa-solid fa-bolt"></i> MAX TILE</span>
+                <span id="stat-max-tile" class="value">0</span>
+            </div>
+        </section>
+
+
+        <!-- Action Control Buttons -->
+        <div class="action-deck">
+            <button id="btn-restart" class="btn btn-secondary flex-1">
+                <i class="fa-solid fa-rotate-right"></i> Restart Grid
+            </button>
+            <button id="btn-undo" class="btn btn-secondary flex-1" disabled>
+                <i class="fa-solid fa-arrow-rotate-left"></i> Undo Step
+            </button>
+        </div>
+    </div>
+
+    <!-- Achievements & Logs Side Drawer (Overlay) -->
+    <div id="drawer-panel" class="drawer">
+        <div class="drawer-header">
+            <h3><i class="fa-solid fa-award"></i> System Ledger</h3>
+            <button id="btn-drawer-close" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <div class="drawer-content">
+            <!-- Achievements -->
+            <div class="drawer-section">
+                <h4 class="subtitle">Achievements</h4>
+                <div class="milestones-grid">
+                    <div id="achieve-first" class="milestone-card locked">
+                        <i class="fa-solid fa-square-plus"></i>
+                        <span class="name">First Spark</span>
+                    </div>
+                    <div id="achieve-64" class="milestone-card locked">
+                        <i class="fa-solid fa-heart"></i>
+                        <span class="name">Deca Merge</span>
+                    </div>
+                    <div id="achieve-512" class="milestone-card locked">
+                        <i class="fa-solid fa-compass"></i>
+                        <span class="name">Matrix Elite</span>
+                    </div>
+                    <div id="achieve-2048" class="milestone-card locked">
+                        <i class="fa-solid fa-crown"></i>
+                        <span class="name">Zen Master</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Activity Logs -->
+            <div class="drawer-section log-section">
+                <h4 class="subtitle">Activity stream</h4>
+                <div id="synthesis-ledger" class="console-box">
+                    <div class="console-line init">[SYSTEM] Neural interface ready.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=5"></script>
+</body>
+</html>

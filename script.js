@@ -21,6 +21,7 @@ class Game2048 {
     constructor() {
         // Core elements
         this.boardElement = document.getElementById('board');
+        this.tilesContainer = document.getElementById('tiles-container');
         this.scoreElement = document.getElementById('current-score');
         this.scoreAddElement = document.getElementById('score-addition-container');
         this.bestScoreElement = document.getElementById('best-score');
@@ -303,6 +304,7 @@ class Game2048 {
 
         // Clear Board DOM
         this.boardElement.innerHTML = '';
+        this.tilesContainer.innerHTML = '';
         this.createBoardGridCells();
 
         // Close overlays
@@ -367,7 +369,7 @@ class Game2048 {
         inner.textContent = tile.value;
         element.appendChild(inner);
 
-        this.boardElement.appendChild(element);
+        this.tilesContainer.appendChild(element);
         tile.element = element;
         this.positionTile(tile);
     }
@@ -377,14 +379,14 @@ class Game2048 {
         const cellSpacing = this.size === 3 ? 14 : (this.size === 4 ? 12 : (this.size === 5 ? 10 : 8));
         
         // Width of single grid cell: (100% - 2 * var(--board-padding) - (size - 1) * gap) / size
-        const widthCalc = `calc((100% - (var(--board-padding) * 2) - ${(this.size - 1) * cellSpacing}px) / ${this.size})`;
+        const widthFormula = `((100% - (var(--board-padding) * 2) - ${(this.size - 1) * cellSpacing}px) / ${this.size})`;
         
         // Positioning: var(--board-padding) + index * (cell_width + gap)
-        const leftCalc = `calc(var(--board-padding) + ${tile.col} * (${widthCalc} + ${cellSpacing}px))`;
-        const topCalc = `calc(var(--board-padding) + ${tile.row} * (${widthCalc} + ${cellSpacing}px))`;
+        const leftCalc = `calc(var(--board-padding) + ${tile.col} * (${widthFormula} + ${cellSpacing}px))`;
+        const topCalc = `calc(var(--board-padding) + ${tile.row} * (${widthFormula} + ${cellSpacing}px))`;
         
-        tile.element.style.width = widthCalc;
-        tile.element.style.height = widthCalc;
+        tile.element.style.width = `calc(${widthFormula})`;
+        tile.element.style.height = `calc(${widthFormula})`;
         tile.element.style.transform = `translate3d(${leftCalc}, ${topCalc}, 0)`;
     }
 
@@ -702,9 +704,8 @@ class Game2048 {
         this.moves = previousState.moves;
         this.movesElement.textContent = this.moves;
         
-        // Clear board elements
-        this.boardElement.innerHTML = '';
-        this.createBoardGridCells();
+        // Clear tiles
+        this.tilesContainer.innerHTML = '';
         
         // Re-construct grid tiles from state clone
         this.grid = Array(this.size).fill(null).map(() => Array(this.size).fill(null));

@@ -1,41 +1,6 @@
 /**
- * 2048: Zen Synthesis | Core Game Controller & Canvas FX
+ * 2048: Zen Synthesis | Core Game Controller
  */
-
-// Particle Burst FX Layer (Disabled)
-class ParticleSystem {
-    constructor(canvas) {}
-    resize() {}
-    spawnBurst() {}
-    spawnTrail() {}
-    startLoop() {}
-    update() {}
-    draw() {}
-}
-
-// Background Constellation FX (Disabled)
-class BackgroundConstellation {
-    constructor(canvas) {}
-    resize() {}
-    initParticles() {}
-    triggerShockwave() {}
-    startLoop() {}
-    update() {}
-    draw() {}
-}
-
-// Warm acoustic chime sound generator (Disabled)
-class SoundEngine {
-    constructor() {
-        this.enabled = false;
-    }
-    init() {}
-    playMove() {}
-    playMerge() {}
-    playUnlock() {}
-    playWin() {}
-    playGameOver() {}
-}
 
 // Representing a single Grid Tile element
 class Tile {
@@ -54,7 +19,7 @@ Tile.nextId = 1;
 // Core Game controller class
 class Game2048 {
     constructor() {
-        // Elements
+        // Core elements
         this.boardElement = document.getElementById('board');
         this.scoreElement = document.getElementById('current-score');
         this.scoreAddElement = document.getElementById('score-addition-container');
@@ -63,21 +28,21 @@ class Game2048 {
         this.timeElement = document.getElementById('stat-time');
         this.maxTileElement = document.getElementById('stat-max-tile');
         
-        // Drawers / Panels
+        // Panels / Consoles
         this.ledgerContainer = document.getElementById('synthesis-ledger');
         this.drawerPanel = document.getElementById('drawer-panel');
         this.drawerCloseBtn = document.getElementById('btn-drawer-close');
         this.drawerTriggerBtn = document.getElementById('btn-achievements-trigger');
+        this.drawerBackdrop = document.getElementById('drawer-backdrop');
         
-        // Buttons
+        // Main action buttons
         this.restartBtn = document.getElementById('btn-restart');
         this.undoBtn = document.getElementById('btn-undo');
-        this.soundBtn = document.getElementById('btn-sound');
         this.retryBtn = document.getElementById('btn-retry');
         this.keepGoingBtn = document.getElementById('btn-keep-going');
         this.winRestartBtn = document.getElementById('btn-win-restart');
         
-        // Selectors
+        // Settings Selectors
         this.gridSizeSelect = document.getElementById('grid-size');
         this.themeSelect = document.getElementById('theme-select');
         this.themeToggleBtn = document.getElementById('btn-theme-toggle');
@@ -86,21 +51,12 @@ class Game2048 {
         this.gameOverOverlay = document.getElementById('game-over-overlay');
         this.gameWinOverlay = document.getElementById('game-win-overlay');
 
-        // FX Canvas
-        this.particles = new ParticleSystem(document.getElementById('particle-canvas'));
-
-        // Background Constellation FX
-        this.bgConstellation = new BackgroundConstellation(document.getElementById('bg-canvas'));
-
-        // Sound controller
-        this.sound = new SoundEngine();
-
         // Parameters
         this.size = parseInt(this.gridSizeSelect.value) || 4;
         this.theme = this.themeSelect.value || 'cyberpunk';
-        this.isDarkMode = true; // Default to dark mode
+        this.isDarkMode = false; // Default to Light Mode for premium Zen layout
         
-        // Permanent achievements store (loaded from storage)
+        // Achievement states
         this.unlockedMilestones = {
             first: false,
             tile64: false,
@@ -108,7 +64,7 @@ class Game2048 {
             tile2048: false
         };
 
-        // Runtime variables
+        // Runtime states
         this.grid = []; 
         this.score = 0;
         this.bestScore = 0;
@@ -119,17 +75,16 @@ class Game2048 {
         this.gameWon = false;
         this.keepPlayingAfterWin = false;
         this.isMoving = false;
-        this.recordBrokenLogged = false;
         
-        // Undo stacks
+        // History for undo stack
         this.history = [];
         this.maxUndoHistory = 15;
 
-        // Gestures
+        // Gestures tracking
         this.touchStartX = 0;
         this.touchStartY = 0;
 
-        // Core Init
+        // Run initialization
         this.loadSettings();
         this.setupThemes();
         this.setupEventListeners();
@@ -149,7 +104,7 @@ class Game2048 {
             this.themeSelect.value = savedTheme;
         }
 
-        // Load Dark/Light state
+        // Load mode preference (defaults to light if not set)
         const savedThemeMode = localStorage.getItem('2048-theme-mode');
         if (savedThemeMode !== null) {
             this.isDarkMode = savedThemeMode === 'dark';
@@ -160,13 +115,7 @@ class Game2048 {
         this.bestScore = savedBest ? parseInt(savedBest) : 0;
         this.bestScoreElement.textContent = this.bestScore;
 
-        const savedSound = localStorage.getItem('2048-sound-enabled');
-        if (savedSound !== null) {
-            this.sound.enabled = savedSound === 'true';
-            this.updateSoundButtonUI();
-        }
-
-        // Achievements load
+        // Milestone achievements load
         const savedMilestones = localStorage.getItem('2048-milestones');
         if (savedMilestones) {
             try {
@@ -183,18 +132,13 @@ class Game2048 {
         localStorage.setItem('2048-theme', this.theme);
         localStorage.setItem('2048-theme-mode', this.isDarkMode ? 'dark' : 'light');
         localStorage.setItem(`2048-best-score-${this.size}`, this.bestScore);
-        localStorage.setItem('2048-sound-enabled', this.sound.enabled);
     }
 
     setupThemes() {
-        // Core grid styles (themes Cyberpunk, Retro Gold etc.)
         if (this.boardElement.parentNode) {
             this.boardElement.parentNode.className = `board-frame size-${this.size}`;
         }
-        this.boardElement.className = `matrix-board theme-${this.theme}`;
-        if (this.particles) {
-            this.particles.resize();
-        }
+        this.boardElement.className = `matrix-board size-${this.size} theme-${this.theme}`;
     }
 
     updateThemeModeUI() {
@@ -205,100 +149,104 @@ class Game2048 {
         }
     }
 
-    updateSoundButtonUI() {
-        const icon = this.soundBtn.querySelector('i');
-        if (this.sound.enabled) {
-            icon.className = 'fa-solid fa-volume-high';
-            this.soundBtn.classList.remove('disabled');
-        } else {
-            icon.className = 'fa-solid fa-volume-xmark';
-            this.soundBtn.classList.add('disabled');
-        }
-    }
-
     toggleDrawer(open) {
-        let backdrop = document.querySelector('.drawer-backdrop');
-        if (!backdrop) {
-            backdrop = document.createElement('div');
-            backdrop.className = 'drawer-backdrop';
-            document.body.appendChild(backdrop);
-            backdrop.addEventListener('click', () => this.toggleDrawer(false));
-        }
-        
         if (open) {
             this.drawerPanel.classList.add('open');
-            backdrop.classList.add('active');
+            if (this.drawerBackdrop) this.drawerBackdrop.classList.add('active');
         } else {
             this.drawerPanel.classList.remove('open');
-            backdrop.classList.remove('active');
+            if (this.drawerBackdrop) this.drawerBackdrop.classList.remove('active');
         }
     }
 
     setupEventListeners() {
-        window.addEventListener('keydown', (e) => this.handleKeyDown(e));
+        // Keyboard inputs
+        window.addEventListener('keydown', (e) => {
+            if (this.isMoving || this.gameEnded || (this.gameWon && !this.keepPlayingAfterWin)) return;
 
-        // Restart buttons
-        this.restartBtn.addEventListener('click', () => {
-            this.sound.init();
-            this.newGame();
-        });
-        this.retryBtn.addEventListener('click', () => this.newGame());
-        this.winRestartBtn.addEventListener('click', () => this.newGame());
+            let direction = null;
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    direction = 'up';
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    direction = 'down';
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    direction = 'left';
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    direction = 'right';
+                    break;
+                default:
+                    return; // Ignore other keys
+            }
 
-        // Undo
-        this.undoBtn.addEventListener('click', () => this.undo());
-
-        // Drawer
-        this.drawerTriggerBtn.addEventListener('click', () => this.toggleDrawer(true));
-        this.drawerCloseBtn.addEventListener('click', () => this.toggleDrawer(false));
-
-        // Sound
-        this.soundBtn.addEventListener('click', () => {
-            this.sound.enabled = !this.sound.enabled;
-            this.sound.init();
-            this.updateSoundButtonUI();
-            this.saveSettings();
-            this.addLog(`[SYSTEM] Haptic Audio: ${this.sound.enabled ? 'ONLINE' : 'OFFLINE'}`, 'info');
-        });
-
-        // Theme Toggle Switch Track
-        this.themeToggleBtn.addEventListener('click', () => {
-            this.isDarkMode = !this.isDarkMode;
-            this.sound.init();
-            this.updateThemeModeUI();
-            this.saveSettings();
-            this.addLog(`[SYSTEM] Interface set to [${this.isDarkMode ? 'DARK' : 'LIGHT'} MODE]`, 'info');
-        });
-
-        this.keepGoingBtn.addEventListener('click', () => {
-            this.gameWinOverlay.classList.remove('visible');
-            setTimeout(() => this.gameWinOverlay.classList.add('hidden'), 300);
-            this.keepPlayingAfterWin = true;
-            this.addLog('[SYSTEM] Limit override accepted. Resuming runs.', 'info');
-            this.startTimer();
+            e.preventDefault();
+            this.handleMove(direction);
         });
 
+        // Grid Size Select Control
         this.gridSizeSelect.addEventListener('change', (e) => {
             this.size = parseInt(e.target.value);
             this.saveSettings();
+            this.setupThemes();
             
+            // Reload best score
             const savedBest = localStorage.getItem(`2048-best-score-${this.size}`);
             this.bestScore = savedBest ? parseInt(savedBest) : 0;
             this.bestScoreElement.textContent = this.bestScore;
-            
+
             this.newGame();
-            e.target.blur(); // Release focus to restore keyboard play immediately
+            e.target.blur();
         });
 
+        // Theme Style Select Control
         this.themeSelect.addEventListener('change', (e) => {
             this.theme = e.target.value;
             this.setupThemes();
             this.saveSettings();
             this.addLog(`[SYSTEM] Theme matrix shifted to [${this.theme.toUpperCase()}]`, 'info');
-            e.target.blur(); // Release focus to restore keyboard play immediately
+            e.target.blur();
         });
 
+        // Theme Mode Toggle Thumb Button (Light / Dark Switch)
+        this.themeToggleBtn.addEventListener('click', () => {
+            this.isDarkMode = !this.isDarkMode;
+            this.updateThemeModeUI();
+            this.saveSettings();
+            this.addLog(`[SYSTEM] Interface shifted to [${this.isDarkMode ? 'DARK' : 'LIGHT'}] mode`, 'info');
+        });
 
+        // Mobile drawer handlers
+        this.drawerTriggerBtn.addEventListener('click', () => this.toggleDrawer(true));
+        this.drawerCloseBtn.addEventListener('click', () => this.toggleDrawer(false));
+        if (this.drawerBackdrop) {
+            this.drawerBackdrop.addEventListener('click', () => this.toggleDrawer(false));
+        }
+
+        // Restart buttons
+        this.restartBtn.addEventListener('click', () => this.newGame());
+        this.retryBtn.addEventListener('click', () => this.newGame());
+        this.winRestartBtn.addEventListener('click', () => this.newGame());
+
+        // Keep going button
+        this.keepGoingBtn.addEventListener('click', () => {
+            this.gameWinOverlay.classList.add('hidden');
+            this.keepPlayingAfterWin = true;
+            this.addLog('[SYSTEM] Zenith threshold extended. Playing infinity mode.', 'info');
+        });
+
+        // Undo button
+        this.undoBtn.addEventListener('click', () => this.performUndo());
 
         // Touch swiping
         const touchContainer = this.boardElement;
@@ -317,101 +265,67 @@ class Game2048 {
         touchContainer.addEventListener('touchend', (e) => {
             if (this.gameEnded || (this.gameWon && !this.keepPlayingAfterWin)) return;
 
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
+            const dx = e.changedTouches[0].clientX - this.touchStartX;
+            const dy = e.changedTouches[0].clientY - this.touchStartY;
+            const absDx = Math.abs(dx);
+            const absDy = Math.abs(dy);
+            const minSwipe = 35; // Pixels threshold
 
-            const dx = touchEndX - this.touchStartX;
-            const dy = touchEndY - this.touchStartY;
-            const minSwipe = 35;
-
-            if (Math.abs(dx) > Math.abs(dy)) {
-                if (Math.abs(dx) > minSwipe) {
-                    if (dx > 0) this.move('right');
-                    else this.move('left');
+            if (Math.max(absDx, absDy) > minSwipe) {
+                let direction = null;
+                if (absDx > absDy) {
+                    direction = dx > 0 ? 'right' : 'left';
+                } else {
+                    direction = dy > 0 ? 'down' : 'up';
                 }
-            } else {
-                if (Math.abs(dy) > minSwipe) {
-                    if (dy > 0) this.move('down');
-                    else this.move('up');
-                }
+                this.handleMove(direction);
             }
-        }, { passive: true });
-    }
-
-    handleKeyDown(e) {
-        if (this.gameEnded || (this.gameWon && !this.keepPlayingAfterWin)) return;
-
-        // Block moves if user is focused on select options
-        if (document.activeElement && ["SELECT", "INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
-            return;
-        }
-
-        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) {
-            e.preventDefault();
-        }
-
-        switch (e.code) {
-            case 'ArrowLeft':
-            case 'KeyA':
-                this.move('left');
-                break;
-            case 'ArrowRight':
-            case 'KeyD':
-                this.move('right');
-                break;
-            case 'ArrowUp':
-            case 'KeyW':
-                this.move('up');
-                break;
-            case 'ArrowDown':
-            case 'KeyS':
-                this.move('down');
-                break;
-        }
+            if (e.cancelable) e.preventDefault();
+        }, { passive: false });
     }
 
     newGame() {
-        this.stopTimer();
-        this.startTime = null;
-        this.timeElement.textContent = "00:00";
-
+        // Clear runtime state
+        this.grid = Array(this.size).fill(null).map(() => Array(this.size).fill(null));
         this.score = 0;
         this.moves = 0;
         this.gameEnded = false;
         this.gameWon = false;
         this.keepPlayingAfterWin = false;
-        this.recordBrokenLogged = false;
-        this.scoreElement.textContent = "0";
-        this.movesElement.textContent = "0";
-        if (this.bestScoreElement && this.bestScoreElement.parentNode) {
-            this.bestScoreElement.parentNode.classList.remove('record-flash');
-        }
-        this.maxTileElement.textContent = "0";
+        this.isMoving = false;
         this.history = [];
+        
+        // Reset Score UI
+        this.scoreElement.textContent = '0';
+        this.movesElement.textContent = '0';
+        this.maxTileElement.textContent = '0';
         this.updateUndoButton();
 
-        this.gameOverOverlay.classList.remove('visible');
+        // Clear Board DOM
+        this.boardElement.innerHTML = '';
+        this.createBoardGridCells();
+
+        // Close overlays
         this.gameOverOverlay.classList.add('hidden');
-        this.gameWinOverlay.classList.remove('visible');
         this.gameWinOverlay.classList.add('hidden');
 
-        // Clear console box logs
-        this.ledgerContainer.innerHTML = '';
-        this.addLog(`[SYSTEM] Matrix initialized (${this.size}x${this.size}). Awaiting cycles...`, 'info');
+        // Reset timer
+        this.startTime = new Date();
+        this.timeElement.textContent = '00:00';
+        clearInterval(this.timerInterval);
+        this.timerInterval = setInterval(() => this.updateTimer(), 1000);
 
-        // Setup Board Frame sizing and theme classes
-        if (this.boardElement.parentNode) {
-            this.boardElement.parentNode.className = `board-frame size-${this.size}`;
-            
-            // Remove old container if it exists from previous run
-            const oldContainer = this.boardElement.parentNode.querySelector('.tile-container');
-            if (oldContainer) {
-                oldContainer.parentNode.removeChild(oldContainer);
-            }
-        }
-        this.boardElement.className = `matrix-board theme-${this.theme}`;
-        this.boardElement.innerHTML = '';
-        
+        // Spawn first two tiles
+        this.spawnTile();
+        this.spawnTile();
+
+        // Log initialization
+        this.clearLogs();
+        this.addLog(`[SYSTEM] Matrix initialized (${this.size}x${this.size}). Awaiting cycles...`, 'info');
+    }
+
+    createBoardGridCells() {
+        // Render background empty grid cells dynamically to match size layout grid
         for (let r = 0; r < this.size; r++) {
             for (let c = 0; c < this.size; c++) {
                 const cell = document.createElement('div');
@@ -419,220 +333,152 @@ class Game2048 {
                 this.boardElement.appendChild(cell);
             }
         }
-
-        const tileContainer = document.createElement('div');
-        tileContainer.className = 'tile-container';
-        if (this.boardElement.parentNode) {
-            this.boardElement.parentNode.appendChild(tileContainer);
-        } else {
-            this.boardElement.appendChild(tileContainer);
-        }
-        this.tileContainerElement = tileContainer;
-
-        this.grid = Array(this.size).fill(null).map(() => Array(this.size).fill(null));
-
-        // Add first components
-        this.addRandomTile();
-        this.addRandomTile();
-        
-        this.renderTiles();
-        this.updateMaxTile();
-        this.updateMilestonesUI();
-        
-        if (this.particles) {
-            this.particles.resize();
-        }
     }
 
-    startTimer() {
-        if (this.timerInterval) return;
-        this.startTime = Date.now();
-        this.timerInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
-            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-            const seconds = (elapsed % 60).toString().padStart(2, '0');
-            this.timeElement.textContent = `${minutes}:${seconds}`;
-        }, 1000);
-    }
-
-    stopTimer() {
-        if (this.timerInterval) {
-            clearInterval(this.timerInterval);
-            this.timerInterval = null;
-        }
-    }
-
-    addRandomTile() {
-        const emptyCells = [];
+    spawnTile() {
+        const empties = [];
         for (let r = 0; r < this.size; r++) {
             for (let c = 0; c < this.size; c++) {
                 if (!this.grid[r][c]) {
-                    emptyCells.push({ r, c });
+                    empties.push({ r, c });
                 }
             }
         }
 
-        if (emptyCells.length > 0) {
-            const index = Math.floor(Math.random() * emptyCells.length);
-            const { r, c } = emptyCells[index];
+        if (empties.length > 0) {
+            const randomPick = empties[Math.floor(Math.random() * empties.length)];
             const value = Math.random() < 0.9 ? 2 : 4;
-            this.grid[r][c] = new Tile(r, c, value);
+            const newTile = new Tile(randomPick.r, randomPick.c, value);
+            this.grid[randomPick.r][randomPick.c] = newTile;
+            this.renderTile(newTile);
+            this.updateMaxTileUI();
         }
     }
 
-    // --- SYSTEMS CONSOLE LOGS ---
-    addLog(text, type = 'info') {
-        const row = document.createElement('div');
-        const now = new Date();
-        const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+    renderTile(tile) {
+        const element = document.createElement('div');
+        element.className = 'tile tile-new';
+        element.setAttribute('data-value', tile.value);
+        element.id = `tile-${tile.id}`;
         
-        let formattedText = text;
-        // Format bracketed status prefixes with rich spans for premium high-fidelity output
-        formattedText = formattedText.replace(/(\[SYSTEM\])/g, '<span class="log-tag-system">$1</span>');
-        formattedText = formattedText.replace(/(\[WARNING\])/g, '<span class="log-tag-warning">$1</span>');
-        formattedText = formattedText.replace(/(Fused elements:)/g, '<span class="log-tag-fuse">$1</span>');
-        formattedText = formattedText.replace(/(🎖️ Milestones unlocked:)/g, '<span class="log-tag-milestone">$1</span>');
+        // inner box text container
+        const inner = document.createElement('div');
+        inner.className = 'tile-inner';
+        inner.textContent = tile.value;
+        element.appendChild(inner);
+
+        this.boardElement.appendChild(element);
+        tile.element = element;
+        this.positionTile(tile);
+    }
+
+    positionTile(tile) {
+        // Calculate offset percentage positioning dynamically to avoid complex layout calc
+        const leftPercent = (tile.col / this.size) * 100;
+        const topPercent = (tile.row / this.size) * 100;
         
-        row.innerHTML = `<span class="log-time">[${timeStr}]</span> ${formattedText}`;
-        row.className = 'console-line';
-        if (type === 'info') row.classList.add('info-log');
-        if (type === 'merge') row.classList.add('merge-log');
-        if (type === 'unlock') row.classList.add('unlock-log');
-
-        this.ledgerContainer.appendChild(row);
-
-        if (this.ledgerContainer.children.length > 40) {
-            this.ledgerContainer.removeChild(this.ledgerContainer.firstChild);
-        }
-
-        this.ledgerContainer.scrollTop = this.ledgerContainer.scrollHeight;
-    }
-
-    // --- MILESTONES SYSTEM ---
-    updateMilestonesUI() {
-        const milestones = [
-            { key: 'first', el: document.getElementById('achieve-first') },
-            { key: 'tile64', el: document.getElementById('achieve-64') },
-            { key: 'tile512', el: document.getElementById('achieve-512') },
-            { key: 'tile2048', el: document.getElementById('achieve-2048') }
-        ];
-
-        milestones.forEach(m => {
-            if (m.el) {
-                if (this.unlockedMilestones[m.key]) {
-                    m.el.className = 'milestone-card unlocked';
-                } else {
-                    m.el.className = 'milestone-card locked';
-                }
-            }
-        });
-    }
-
-    unlockMilestone(key, name) {
-        if (this.unlockedMilestones[key]) return;
+        // Match CSS grid padding / spacing offsets
+        const paddingOffset = 14; 
+        const cellSpacing = this.size === 3 ? 14 : (this.size === 4 ? 12 : (this.size === 5 ? 10 : 8));
         
-        this.unlockedMilestones[key] = true;
-        localStorage.setItem('2048-milestones', JSON.stringify(this.unlockedMilestones));
+        const widthCalc = `calc((100% - 28px - ${(this.size - 1) * cellSpacing}px) / ${this.size})`;
+        const leftCalc = `calc(${leftPercent}% + ${paddingOffset}px - ${tile.col * (paddingOffset * 2 / this.size)}px + ${tile.col * cellSpacing}px)`;
+        const topCalc = `calc(${topPercent}% + ${paddingOffset}px - ${tile.row * (paddingOffset * 2 / this.size)}px + ${tile.row * cellSpacing}px)`;
         
-        this.updateMilestonesUI();
-        this.sound.playUnlock();
-        this.addLog(`🎖️ Milestones unlocked: "${name}"`, 'unlock');
+        tile.element.style.width = widthCalc;
+        tile.element.style.height = widthCalc;
+        tile.element.style.transform = `translate3d(${leftCalc}, ${topCalc}, 0)`;
     }
 
-    checkAchievements(maxVal) {
-        if (maxVal >= 64 && !this.unlockedMilestones.tile64) {
-            this.unlockMilestone('tile64', 'Deca Merge');
-        }
-        if (maxVal >= 512 && !this.unlockedMilestones.tile512) {
-            this.unlockMilestone('tile512', 'Matrix Elite');
-        }
-        if (maxVal >= 2048 && !this.unlockedMilestones.tile2048) {
-            this.unlockMilestone('tile2048', 'Zen Master');
-        }
-    }
+    handleMove(direction) {
+        if (this.gameEnded || this.isMoving) return;
 
-    move(direction) {
-        if (this.gameEnded || (this.gameWon && !this.keepPlayingAfterWin)) return;
-        if (this.isMoving) return;
-
-        let vector = { x: 0, y: 0 };
-        switch (direction) {
-            case 'left':  vector.x = -1; break;
-            case 'right': vector.x = 1;  break;
-            case 'up':    vector.y = -1; break;
-            case 'down':  vector.y = 1;  break;
-        }
-
-        const rowTraversal = [];
-        const colTraversal = [];
-        for (let i = 0; i < this.size; i++) {
-            rowTraversal.push(i);
-            colTraversal.push(i);
-        }
-
-        if (vector.x === 1) colTraversal.reverse();
-        if (vector.y === 1) rowTraversal.reverse();
-
+        // Backup states for potential undo step
         const gridBackup = this.cloneGridState();
         const scoreBackup = this.score;
         const movesBackup = this.moves;
 
         let moved = false;
-        let earnedScore = 0;
-        const tilesToRemove = [];
-        const mergedCells = Array(this.size).fill(null).map(() => Array(this.size).fill(false));
-        const mergesListThisTurn = [];
+        let mergeScore = 0;
+        const vector = this.getVector(direction);
+        const traversals = this.getTraversals(vector);
 
-        rowTraversal.forEach(r => {
-            colTraversal.forEach(c => {
-                const tile = this.grid[r][c];
+        // Reset all merged tags before scanning
+        this.grid.forEach(row => {
+            row.forEach(tile => {
                 if (tile) {
-                    let currR = r;
-                    let currC = c;
+                    tile.isMerged = false;
+                    tile.isNew = false;
+                    if (tile.element) {
+                        tile.element.classList.remove('tile-new', 'tile-merged');
+                    }
+                }
+            });
+        });
+
+        // Scan rows/cols according to direction vector
+        traversals.r.forEach(currR => {
+            traversals.c.forEach(currC => {
+                const tile = this.grid[currR][currC];
+                if (tile) {
+                    const furthest = this.findFurthestPosition(currR, currC, vector);
+                    const nextCell = furthest.next;
                     
-                    while (true) {
-                        const nextR = currR + vector.y;
-                        const nextC = currC + vector.x;
-                        
-                        if (nextR < 0 || nextR >= this.size || nextC < 0 || nextC >= this.size) break;
-                        
-                        const nextTile = this.grid[nextR][nextC];
-                        if (nextTile) {
-                            if (nextTile.value === tile.value && !mergedCells[nextR][nextC]) {
-                                // Merge
-                                const oldVal = tile.value;
-                                const newVal = oldVal * 2;
-                                
-                                tile.isNew = false;
-                                tile.isMerged = true;
-                                tile.row = nextR;
-                                tile.col = nextC;
-                                
-                                tilesToRemove.push(tile);
-                                
-                                const merged = new Tile(nextR, nextC, newVal);
-                                merged.isNew = false;
-                                merged.isMerged = true;
-                                
-                                this.grid[nextR][nextC] = merged;
-                                this.grid[currR][currC] = null;
-                                
-                                earnedScore += newVal;
-                                mergedCells[nextR][nextC] = true;
-                                moved = true;
-                                
-                                mergesListThisTurn.push(`${oldVal}+${oldVal} ➔ ${newVal}`);
-                            }
-                            break;
-                        } else {
-                            // Slide through empty space
+                    let hasMerged = false;
+                    // Check if merge is valid
+                    if (nextCell.r >= 0 && nextCell.r < this.size && nextCell.c >= 0 && nextCell.c < this.size) {
+                        const targetTile = this.grid[nextCell.r][nextCell.c];
+                        if (targetTile && targetTile.value === tile.value && !targetTile.isMerged) {
+                            // Merge fusion action
+                            hasMerged = true;
+                            const mergedValue = tile.value * 2;
+                            
+                            // Delete moving source, update target values
+                            targetTile.value = mergedValue;
+                            targetTile.isMerged = true;
+                            
+                            // Update core scores
+                            this.score += mergedValue;
+                            mergeScore += mergedValue;
+
+                            // Handle UI element fusion animation
+                            const tileEl = tile.element;
+                            tile.row = nextCell.r;
+                            tile.col = nextCell.c;
+                            this.positionTile(tile);
+                            
+                            // Animate fusion pop
+                            const oldTargetId = `tile-${targetTile.id}`;
+                            const oldTargetEl = targetTile.element;
+                            
+                            setTimeout(() => {
+                                if (tileEl && tileEl.parentNode) tileEl.parentNode.removeChild(tileEl);
+                                if (oldTargetEl) {
+                                    oldTargetEl.setAttribute('data-value', mergedValue);
+                                    oldTargetEl.querySelector('.tile-inner').textContent = mergedValue;
+                                    oldTargetEl.classList.add('tile-merged');
+                                }
+                            }, 120);
+
+                            this.grid[currR][currC] = null;
+                            moved = true;
+
+                            // Achievement validations
+                            this.checkAchievements(mergedValue);
+                        }
+                    }
+
+                    if (!hasMerged) {
+                        if (furthest.f.r !== currR || furthest.f.c !== currC) {
+                            // Normal slide movement
+                            const nextR = furthest.f.r;
+                            const nextC = furthest.f.c;
+                            
                             this.grid[nextR][nextC] = tile;
                             this.grid[currR][currC] = null;
                             tile.row = nextR;
                             tile.col = nextC;
-                            tile.isNew = false;
-                            currR = nextR;
-                            currC = nextC;
+                            this.positionTile(tile);
                             moved = true;
                         }
                     }
@@ -643,7 +489,7 @@ class Game2048 {
         if (moved) {
             this.isMoving = true;
             
-            // Remove tilt class additions for flat board layout
+            // Standard delay to align transition sliding animations
             setTimeout(() => {
                 this.isMoving = false;
             }, 150);
@@ -653,6 +499,7 @@ class Game2048 {
                 this.addLog('[SYSTEM] Cycle counting start.', 'info');
             }
 
+            // Save step history
             this.history.push({
                 grid: gridBackup,
                 score: scoreBackup,
@@ -663,354 +510,297 @@ class Game2048 {
             }
             this.updateUndoButton();
 
+            // Progress stats increment
             this.moves++;
             this.movesElement.textContent = this.moves;
 
-            if (earnedScore > 0) {
-                this.score += earnedScore;
-                this.scoreElement.textContent = this.score;
+            // Spawn next new tile block
+            this.spawnTile();
 
-                if (this.score > this.bestScore) {
-                    const originalBest = this.bestScore;
-                    this.bestScore = this.score;
-                    this.bestScoreElement.textContent = this.bestScore;
-                    localStorage.setItem(`2048-best-score-${this.size}`, this.bestScore);
-
-                    // 最高分超越庆祝
-                    if (this.bestScoreElement.parentNode) {
-                        this.bestScoreElement.parentNode.classList.add('record-flash');
-                    }
-                    if (originalBest > 0 && !this.recordBrokenLogged) {
-                        this.recordBrokenLogged = true;
-                        this.addLog('🎖️ NEW RECORD: Neural performance exceeds historical threshold!', 'unlock');
-                        // 生成金色爆破粒子
-                        setTimeout(() => {
-                            if (this.bestScoreElement && this.bestScoreElement.parentNode) {
-                                const bestCardRect = this.bestScoreElement.parentNode.getBoundingClientRect();
-                                const boardRect = this.boardElement.getBoundingClientRect();
-                                const bx = bestCardRect.left - boardRect.left + bestCardRect.width / 2;
-                                const by = bestCardRect.top - boardRect.top + bestCardRect.height / 2;
-                                this.particles.spawnBurst(bx, by, '#f59e0b', 15);
-                            }
-                        }, 100);
-                    }
-                }
-
-                this.showScoreAddition(earnedScore);
-                this.sound.playMerge();
-                
-                // First spark milestone
-                if (!this.unlockedMilestones.first) {
-                    this.unlockMilestone('first', 'First Spark');
-                }
-
-                mergesListThisTurn.forEach(logText => {
-                    this.addLog(`Fused elements: ${logText} (+${logText.split('➔')[1].trim()})`, 'merge');
-                });
-            } else {
-                this.sound.playMove();
+            // Update scores displays
+            this.scoreElement.textContent = this.score;
+            if (mergeScore > 0) {
+                this.triggerScoreAddition(mergeScore);
+                this.addLog(`[SYNTHESIS] Fusion trigger. +${mergeScore} SCORE.`, 'score');
             }
 
-            this.addRandomTile();
-            this.renderTiles(tilesToRemove);
-            
-            const maxVal = this.updateMaxTile();
-            this.checkAchievements(maxVal);
-            
-            this.checkGameStatus();
+            // Highscore break validator
+            if (this.score > this.bestScore) {
+                this.bestScore = this.score;
+                this.bestScoreElement.textContent = this.bestScore;
+                localStorage.setItem(`2048-best-score-${this.size}`, this.bestScore);
+            }
+
+            // Game End scan check
+            if (this.checkGameEnded()) {
+                this.endGame(false);
+            }
+        } else {
+            // Trigger board shake on invalid inputs
+            this.boardElement.classList.add('board-shake');
+            setTimeout(() => {
+                this.boardElement.classList.remove('board-shake');
+            }, 200);
         }
     }
 
-    cloneGridState() {
-        const state = [];
+    triggerScoreAddition(score) {
+        this.scoreAddElement.innerHTML = '';
+        const addEl = document.createElement('div');
+        addEl.className = 'score-addition';
+        addEl.textContent = `+${score}`;
+        
+        // Random drift direction for juicy neumorphic look
+        const scatterX = `${(Math.random() - 0.5) * 36}px`;
+        addEl.style.setProperty('--scatter-x', scatterX);
+        
+        this.scoreAddElement.appendChild(addEl);
+    }
+
+    getVector(direction) {
+        const map = {
+            up: { r: -1, c: 0 },
+            down: { r: 1, c: 0 },
+            left: { r: 0, c: -1 },
+            right: { r: 0, c: 1 }
+        };
+        return map[direction];
+    }
+
+    getTraversals(vector) {
+        const r = [];
+        const c = [];
+        for (let i = 0; i < this.size; i++) {
+            r.push(i);
+            c.push(i);
+        }
+        // Scan backwards if moving right or down to prevent double fusion bugs
+        if (vector.c === 1) c.reverse();
+        if (vector.r === 1) r.reverse();
+        return { r, c };
+    }
+
+    findFurthestPosition(r, c, vector) {
+        let prevR = r;
+        let prevC = c;
+        let nextR = r + vector.r;
+        let nextC = c + vector.c;
+
+        while (nextR >= 0 && nextR < this.size && nextC >= 0 && nextC < this.size && !this.grid[nextR][nextC]) {
+            prevR = nextR;
+            prevC = nextC;
+            nextR += vector.r;
+            nextC += vector.c;
+        }
+
+        return {
+            f: { r: prevR, c: prevC },
+            next: { r: nextR, c: nextC }
+        };
+    }
+
+    checkGameEnded() {
+        // Grid vacancy scanner
         for (let r = 0; r < this.size; r++) {
-            state.push([]);
             for (let c = 0; c < this.size; c++) {
-                const tile = this.grid[r][c];
-                if (tile) {
-                    const cloned = new Tile(tile.row, tile.col, tile.value);
-                    cloned.id = tile.id;
-                    cloned.isNew = tile.isNew;
-                    cloned.isMerged = tile.isMerged;
-                    state[r].push(cloned);
+                if (!this.grid[r][c]) return false;
+            }
+        }
+
+        // Combine scanners to find valid merge actions left
+        for (let r = 0; r < this.size; r++) {
+            for (let c = 0; c < this.size; c++) {
+                const val = this.grid[r][c].value;
+                const directions = [{r:1,c:0},{r:-1,c:0},{r:0,c:1},{r:0,c:-1}];
+                for (let d of directions) {
+                    const nr = r + d.r;
+                    const nc = c + d.c;
+                    if (nr >= 0 && nr < this.size && nc >= 0 && nc < this.size) {
+                        const target = this.grid[nr][nc];
+                        if (target && target.value === val) return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    checkAchievements(mergedValue) {
+        // Validate milestone synthesises
+        if (this.moves === 0) return;
+        
+        if (mergedValue >= 64 && !this.unlockedMilestones.tile64) {
+            this.unlockAchievement('tile64', 'Deca Merge');
+        }
+        if (mergedValue >= 512 && !this.unlockedMilestones.tile512) {
+            this.unlockAchievement('tile512', 'Matrix Elite');
+        }
+        if (mergedValue >= 2048 && !this.unlockedMilestones.tile2048) {
+            this.unlockAchievement('tile2048', 'Zen Master');
+            if (!this.gameWon) {
+                this.endGame(true);
+            }
+        }
+        
+        // General synthesis trigger milestone
+        if (!this.unlockedMilestones.first) {
+            this.unlockAchievement('first', 'First Spark');
+        }
+    }
+
+    unlockAchievement(key, name) {
+        this.unlockedMilestones[key] = true;
+        localStorage.setItem('2048-milestones', JSON.stringify(this.unlockedMilestones));
+        this.updateMilestonesUI();
+        this.addLog(`[SUCCESS] Milestone Unlocked: [${name}]!`, 'success');
+    }
+
+    updateMilestonesUI() {
+        const milestoneDomMap = {
+            first: document.getElementById('achieve-first'),
+            tile64: document.getElementById('achieve-64'),
+            tile512: document.getElementById('achieve-512'),
+            tile2048: document.getElementById('achieve-2048')
+        };
+
+        for (let k in milestoneDomMap) {
+            const el = milestoneDomMap[k];
+            if (el) {
+                if (this.unlockedMilestones[k]) {
+                    el.classList.remove('locked');
+                    el.classList.add('unlocked');
+                    el.querySelector('i').className = k === 'first' ? 'fa-solid fa-square-plus' : (k === 'tile64' ? 'fa-solid fa-heart' : (k === 'tile512' ? 'fa-solid fa-compass' : 'fa-solid fa-crown'));
                 } else {
-                    state[r].push(null);
+                    el.classList.add('locked');
+                    el.classList.remove('unlocked');
                 }
             }
         }
-        return state;
     }
 
-    undo() {
-        if (this.history.length === 0 || this.gameEnded) return;
-
-        const previousState = this.history.pop();
-        this.score = previousState.score;
-        this.moves = previousState.moves;
-        
-        this.grid = Array(this.size).fill(null).map(() => Array(this.size).fill(null));
-        this.tileContainerElement.innerHTML = '';
-
-        for (let r = 0; r < this.size; r++) {
-            for (let c = 0; c < this.size; c++) {
-                const tileData = previousState.grid[r][c];
-                if (tileData) {
-                    const tile = new Tile(tileData.row, tileData.col, tileData.value);
-                    tile.id = tileData.id;
-                    tile.isNew = false;
-                    this.grid[r][c] = tile;
-                }
-            }
-        }
-
-        this.renderTiles();
-        
-        this.scoreElement.textContent = this.score;
-        this.movesElement.textContent = this.moves;
-        this.updateMaxTile();
-        this.updateUndoButton();
-        this.sound.playMove();
-
-        // 撤销微动抖动特效
-        this.boardElement.classList.add('board-shake');
-        setTimeout(() => {
-            this.boardElement.classList.remove('board-shake');
-        }, 200);
-
-        this.gameOverOverlay.classList.remove('visible');
-        this.gameOverOverlay.classList.add('hidden');
-        this.gameEnded = false;
-        
-        this.addLog(`[SYSTEM] Temporal rollback accepted. Cycle set to ${this.moves}.`, 'info');
+    updateMaxTileUI() {
+        let maxVal = 0;
+        this.grid.forEach(row => {
+            row.forEach(tile => {
+                if (tile && tile.value > maxVal) maxVal = tile.value;
+            });
+        });
+        this.maxTileElement.textContent = maxVal;
     }
 
     updateUndoButton() {
-        this.undoBtn.disabled = (this.history.length === 0);
+        this.undoBtn.disabled = this.history.length === 0;
     }
 
-    showScoreAddition(score) {
-        if (!this.scoreAddElement) return;
+    performUndo() {
+        if (this.history.length === 0 || this.isMoving) return;
         
-        const bubble = document.createElement('div');
-        bubble.className = 'score-addition-bubble';
-        bubble.textContent = `+${score}`;
+        const previousState = this.history.pop();
         
-        // Randomize horizontal drift slightly
-        const randomX = Math.floor(Math.random() * 32) - 16; // -16px to +16px
-        bubble.style.setProperty('--scatter-x', `${randomX}px`);
+        // Restore values
+        this.score = previousState.score;
+        this.scoreElement.textContent = this.score;
         
-        this.scoreAddElement.appendChild(bubble);
+        this.moves = previousState.moves;
+        this.movesElement.textContent = this.moves;
         
-        // Auto remove bubble once animation finishes (800ms)
-        setTimeout(() => {
-            if (bubble.parentNode) {
-                bubble.parentNode.removeChild(bubble);
-            }
-        }, 800);
-    }
-
-    updateMaxTile() {
-        let max = 0;
-        for (let r = 0; r < this.size; r++) {
-            for (let c = 0; c < this.size; c++) {
-                if (this.grid[r][c] && this.grid[r][c].value > max) {
-                    max = this.grid[r][c].value;
+        // Clear board elements
+        this.boardElement.innerHTML = '';
+        this.createBoardGridCells();
+        
+        // Re-construct grid tiles from state clone
+        this.grid = Array(this.size).fill(null).map(() => Array(this.size).fill(null));
+        previousState.grid.forEach((row, r) => {
+            row.forEach((val, c) => {
+                if (val !== null) {
+                    const restoredTile = new Tile(r, c, val);
+                    this.grid[r][c] = restoredTile;
+                    this.renderTile(restoredTile);
                 }
-            }
-        }
-        this.maxTileElement.textContent = max;
-
-        // 根据最大Tile数值动态渲染全网页环境发光色
-        let rgbStr = '99, 102, 241';
-        if (max >= 128 && max < 512) {
-            rgbStr = '16, 185, 129';
-        } else if (max >= 512 && max < 1024) {
-            rgbStr = '245, 158, 11';
-        } else if (max >= 1024 && max < 2048) {
-            rgbStr = '168, 85, 247';
-        } else if (max >= 2048) {
-            rgbStr = '6, 182, 212';
-        }
-        document.documentElement.style.setProperty('--ambient-rgb', rgbStr);
-
-        return max;
-    }
-
-    renderTiles(tilesToRemove = []) {
-        for (let r = 0; r < this.size; r++) {
-            for (let c = 0; c < this.size; c++) {
-                const tile = this.grid[r][c];
-                if (tile) {
-                    if (!tile.element) {
-                        const el = document.createElement('div');
-                        el.className = 'tile';
-                        el.setAttribute('data-value', tile.value);
-                        
-                        if (tile.value > 2048) {
-                            el.classList.add('tile-super');
-                        }
-
-                        const inner = document.createElement('div');
-                        inner.className = 'tile-inner';
-                        inner.textContent = tile.value;
-                        el.appendChild(inner);
-
-                        tile.element = el;
-                        
-                        if (tile.isNew) {
-                            el.classList.add('tile-new');
-                        } else if (tile.isMerged) {
-                            el.classList.add('tile-merged');
-                        }
-
-                        this.tileContainerElement.appendChild(el);
-                    } else {
-                        tile.element.classList.remove('tile-new');
-                        tile.element.classList.remove('tile-merged');
-                        
-                        if (tile.isMerged) {
-                            tile.element.classList.add('tile-merged');
-                            tile.element.setAttribute('data-value', tile.value);
-                            tile.element.querySelector('.tile-inner').textContent = tile.value;
-                            if (tile.value > 2048) {
-                                tile.element.classList.add('tile-super');
-                            }
-                        }
-                    }
-
-                    tile.element.style.setProperty('--row', tile.row);
-                    tile.element.style.setProperty('--col', tile.col);
-                    
-                    if (tile.isMerged && tile.element) {
-                        this.triggerExplosiveFX(tile);
-                    }
-
-                    tile.isNew = false;
-                    tile.isMerged = false;
-                }
-            }
-        }
-
-        tilesToRemove.forEach(tile => {
-            if (tile.element) {
-                tile.element.classList.remove('tile-new', 'tile-merged');
-                tile.element.style.setProperty('--row', tile.row);
-                tile.element.style.setProperty('--col', tile.col);
-                
-                const el = tile.element;
-                setTimeout(() => {
-                    if (el && el.parentNode) {
-                        el.parentNode.removeChild(el);
-                    }
-                }, 150);
-            }
+            });
         });
-    }
 
-    triggerExplosiveFX(tile) {
-        setTimeout(() => {
-            if (!tile.element || !this.particles) return;
-            
-            const boardRect = this.boardElement.getBoundingClientRect();
-            const tileRect = tile.element.getBoundingClientRect();
-            
-            const x = tileRect.left - boardRect.left + tileRect.width / 2;
-            const y = tileRect.top - boardRect.top + tileRect.height / 2;
-            
-            const tileInner = tile.element.querySelector('.tile-inner');
-            const style = window.getComputedStyle(tileInner || tile.element);
-            
-            const color = style.backgroundImage !== 'none' 
-                ? style.backgroundImage 
-                : style.backgroundColor;
-            
-            this.particles.spawnBurst(x, y, color, 18);
-
-            // 同时在背景神经网络上产生以合并点为圆心的引力脉冲冲击波
-            if (this.bgConstellation) {
-                const bx = tileRect.left + tileRect.width / 2;
-                const by = tileRect.top + tileRect.height / 2;
-                this.bgConstellation.triggerShockwave(bx, by);
-            }
-        }, 60);
-    }
-
-    checkGameStatus() {
-        if (!this.gameWon && !this.keepPlayingAfterWin) {
-            for (let r = 0; r < this.size; r++) {
-                for (let c = 0; c < this.size; c++) {
-                    if (this.grid[r][c] && this.grid[r][c].value === 2048) {
-                        this.gameWon = true;
-                        this.stopTimer();
-                        this.sound.playWin();
-                        this.triggerWinCelebration();
-                        
-                        this.addLog('🏆 STAGE CLEAR: Zen Core 2048 Synthesized!', 'unlock');
-                        
-                        this.gameWinOverlay.classList.remove('hidden');
-                        void this.gameWinOverlay.offsetWidth;
-                        this.gameWinOverlay.classList.add('visible');
-                        return;
-                    }
-                }
-            }
-        }
-
-        let movesAvailable = false;
+        this.updateMaxTileUI();
+        this.updateUndoButton();
         
-        for (let r = 0; r < this.size; r++) {
-            for (let c = 0; c < this.size; c++) {
-                if (!this.grid[r][c]) {
-                    movesAvailable = true;
-                    break;
-                }
-                
-                const val = this.grid[r][c].value;
-                if (c + 1 < this.size && this.grid[r][c + 1] && this.grid[r][c + 1].value === val) {
-                    movesAvailable = true;
-                    break;
-                }
-                if (r + 1 < this.size && this.grid[r + 1][c] && this.grid[r + 1][c].value === val) {
-                    movesAvailable = true;
-                    break;
-                }
-            }
-            if (movesAvailable) break;
-        }
+        // Hide overlays if active
+        this.gameEnded = false;
+        this.gameOverOverlay.classList.add('hidden');
+        
+        this.addLog('[SYSTEM] Grid state rolled back to previous cycle.', 'info');
+    }
 
-        if (!movesAvailable) {
-            this.gameEnded = true;
-            this.stopTimer();
-            this.sound.playGameOver();
-            this.addLog('[WARNING] Board Grid jammed! Operational run aborted.', 'unlock');
-            
-            this.gameOverOverlay.classList.remove('visible');
-            this.gameOverOverlay.classList.add('hidden');
+    cloneGridState() {
+        return this.grid.map(row => 
+            row.map(tile => tile ? tile.value : null)
+        );
+    }
+
+    endGame(win) {
+        clearInterval(this.timerInterval);
+        this.gameEnded = true;
+
+        if (win) {
+            this.gameWon = true;
+            this.gameWinOverlay.classList.remove('hidden');
+            this.addLog('[SUCCESS] Zenith limit unlocked! Synthesis core complete.', 'success');
+        } else {
             this.gameOverOverlay.classList.remove('hidden');
-            void this.gameOverOverlay.offsetWidth;
-            this.gameOverOverlay.classList.add('visible');
+            this.addLog('[FAILURE] Matrix capacity reached. Board Jammed.', 'danger');
         }
     }
 
-    triggerWinCelebration() {
-        if (!this.particles) return;
-        let count = 0;
-        const interval = setInterval(() => {
-            if (count > 25 || this.gameEnded) {
-                clearInterval(interval);
-                return;
-            }
-            const rx = Math.random() * this.particles.width;
-            const ry = Math.random() * this.particles.height;
-            const colors = ['#6366f1', '#06b6d4', '#d946ef', '#10b981', '#f59e0b', '#fb7185'];
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            
-            this.particles.spawnBurst(rx, ry, color, 20);
-            count++;
-        }, 120);
+    startTimer() {
+        this.startTime = new Date();
+        clearInterval(this.timerInterval);
+        this.timerInterval = setInterval(() => this.updateTimer(), 1000);
+    }
+
+    updateTimer() {
+        if (!this.startTime) return;
+        const diffMs = new Date() - this.startTime;
+        const diffSecs = Math.floor(diffMs / 1000);
+        const mins = Math.floor(diffSecs / 60).toString().padStart(2, '0');
+        const secs = (diffSecs % 60).toString().padStart(2, '0');
+        this.timeElement.textContent = `${mins}:${secs}`;
+    }
+
+    /* Logs ledger systems */
+    addLog(text, type = 'info') {
+        const timeStr = new Date().toTimeString().split(' ')[0];
+        const line = document.createElement('div');
+        line.className = `console-line ${type}`;
+        
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'time';
+        timeSpan.textContent = `[${timeStr}]`;
+        
+        const sysSpan = document.createElement('span');
+        sysSpan.className = 'sys';
+        
+        let label = '[SYSTEM]';
+        if (type === 'score') label = '[SYNTH]';
+        if (type === 'success') label = '[ACHIEV]';
+        if (type === 'danger') label = '[HALT]';
+        
+        sysSpan.textContent = label;
+        
+        const contentNode = document.createTextNode(` ${text.replace(/^\[SYSTEM\]\s*|^\[SYNTHESIS\]\s*|^\[SUCCESS\]\s*|^\[FAILURE\]\s*/, '')}`);
+        
+        line.appendChild(timeSpan);
+        line.appendChild(sysSpan);
+        line.appendChild(contentNode);
+        
+        this.ledgerContainer.appendChild(line);
+        this.ledgerContainer.scrollTop = this.ledgerContainer.scrollHeight;
+    }
+
+    clearLogs() {
+        this.ledgerContainer.innerHTML = '';
     }
 }
 
+// Instantiate game instance on DOM loaded
 window.addEventListener('DOMContentLoaded', () => {
-    new Game2048();
+    window.game2048 = new Game2048();
 });

@@ -1065,9 +1065,30 @@ body.dark-mode .overlay { background: rgba(10,12,20,.8); }
 
 .milestone-card.unlocked {
     opacity: 1;
-    border: 1px solid rgba(16,185,129,.3);
-    background: rgba(16,185,129,.05);
-    animation: achieve-pulse 3s infinite ease-in-out;
+    border: 1px solid transparent !important;
+    background: var(--surface2) !important;
+    background-clip: padding-box !important;
+    box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.16);
+    position: relative;
+    z-index: 1;
+}
+
+.milestone-card.unlocked::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    border-radius: var(--r-md);
+    background: linear-gradient(90deg, #ff007f, #7f00ff, #00f0ff, #00ff7f, #ff007f);
+    background-size: 300% 300%;
+    animation: border-runner 5s linear infinite;
+    opacity: 0.85;
+}
+
+@keyframes border-runner {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .milestone-card.unlocked i   { color: #10b981; }
@@ -1278,5 +1299,20 @@ body.dark-mode .overlay { background: rgba(10,12,20,.8); }
     .stat-pill .value { font-size: 0.8rem; }
     .btn { padding: 8px 12px; font-size: 0.74rem; }
     .custom-select-trigger { padding: 6px 10px; font-size: 0.74rem; }
+}
+
+/* ==========================================================================
+   MOBILE QUICK SETTINGS WRAPPING (3 select pills layout)
+   ========================================================================== */
+@media (max-width: 480px) {
+    .quick-settings {
+        flex-wrap: wrap;
+    }
+    .quick-settings .select-pill {
+        flex: 1 1 calc(50% - 5px);
+    }
+    .quick-settings .select-pill:last-child {
+        flex: 1 1 100%;
+    }
 }
 

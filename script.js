@@ -5,6 +5,8 @@ class SoundEffects {
     constructor() {
         this.ctx = null;
         this.muted = true;
+        this.preset = 'zen'; // 'zen', 'cyber', 'retro', 'mech'
+        this.noiseBuffer = null;
     }
 
     init() {
@@ -13,27 +15,92 @@ class SoundEffects {
         }
     }
 
+    setPreset(preset) {
+        this.preset = preset;
+    }
+
+    getNoiseBuffer() {
+        if (this.noiseBuffer) return this.noiseBuffer;
+        this.init();
+        const bufferSize = this.ctx.sampleRate * 0.5; // 0.5 seconds of noise
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        this.noiseBuffer = buffer;
+        return buffer;
+    }
+
     playClick() {
         if (this.muted) return;
         this.init();
         const ctx = this.ctx;
         if (ctx.state === 'suspended') ctx.resume();
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.type = 'sine';
         const now = ctx.currentTime;
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.exponentialRampToValueAtTime(350, now + 0.05);
 
-        gain.gain.setValueAtTime(0.015, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        if (this.preset === 'mech') {
+            // Mechanical switch click click sound (double transient click)
+            // 1. High frequency click click tick
+            const oscClick = ctx.createOscillator();
+            const gainClick = ctx.createGain();
+            oscClick.connect(gainClick);
+            gainClick.connect(ctx.destination);
+            oscClick.type = 'sine';
+            oscClick.frequency.setValueAtTime(3200, now);
+            gainClick.gain.setValueAtTime(0.015, now);
+            gainClick.gain.exponentialRampToValueAtTime(0.001, now + 0.005);
+            oscClick.start(now);
+            oscClick.stop(now + 0.005);
 
-        osc.start(now);
-        osc.stop(now + 0.05);
+            // 2. Damped low sound bottom out
+            const oscBottom = ctx.createOscillator();
+            const gainBottom = ctx.createGain();
+            oscBottom.connect(gainBottom);
+            gainBottom.connect(ctx.destination);
+            oscBottom.type = 'triangle';
+            oscBottom.frequency.setValueAtTime(170, now);
+            gainBottom.gain.setValueAtTime(0.025, now);
+            gainBottom.gain.exponentialRampToValueAtTime(0.001, now + 0.012);
+            oscBottom.start(now);
+            oscBottom.stop(now + 0.012);
+        } else if (this.preset === 'cyber') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(900, now);
+            osc.frequency.exponentialRampToValueAtTime(200, now + 0.04);
+            gain.gain.setValueAtTime(0.01, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+            osc.start(now);
+            osc.stop(now + 0.04);
+        } else if (this.preset === 'retro') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(500, now);
+            osc.frequency.setValueAtTime(800, now + 0.015);
+            gain.gain.setValueAtTime(0.01, now);
+            gain.gain.setValueAtTime(0.001, now + 0.03);
+            osc.start(now);
+            osc.stop(now + 0.03);
+        } else { // 'zen'
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(350, now + 0.05);
+            gain.gain.setValueAtTime(0.015, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc.start(now);
+            osc.stop(now + 0.05);
+        }
     }
 
     playSlide() {
@@ -41,22 +108,73 @@ class SoundEffects {
         this.init();
         const ctx = this.ctx;
         if (ctx.state === 'suspended') ctx.resume();
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.type = 'sine';
         const now = ctx.currentTime;
-        osc.frequency.setValueAtTime(160, now);
-        osc.frequency.exponentialRampToValueAtTime(280, now + 0.08);
 
-        gain.gain.setValueAtTime(0.04, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        if (this.preset === 'mech') {
+            // Mechanical switch slide keyclack
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(140, now);
+            gain.gain.setValueAtTime(0.03, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.018);
+            osc.start(now);
+            osc.stop(now + 0.018);
 
-        osc.start(now);
-        osc.stop(now + 0.08);
+            // Add small noise burst
+            const noise = ctx.createBufferSource();
+            noise.buffer = this.getNoiseBuffer();
+            const filter = ctx.createBiquadFilter();
+            const noiseGain = ctx.createGain();
+            filter.type = 'bandpass';
+            filter.frequency.value = 1600;
+            filter.Q.value = 2.5;
+            noiseGain.gain.setValueAtTime(0.015, now);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
+            noise.connect(filter);
+            filter.connect(noiseGain);
+            noiseGain.connect(ctx.destination);
+            noise.start(now);
+            noise.stop(now + 0.015);
+        } else if (this.preset === 'cyber') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(320, now);
+            osc.frequency.exponentialRampToValueAtTime(100, now + 0.08);
+            gain.gain.setValueAtTime(0.02, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc.start(now);
+            osc.stop(now + 0.08);
+        } else if (this.preset === 'retro') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.exponentialRampToValueAtTime(600, now + 0.06);
+            gain.gain.setValueAtTime(0.015, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+            osc.start(now);
+            osc.stop(now + 0.06);
+        } else { // 'zen'
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(160, now);
+            osc.frequency.exponentialRampToValueAtTime(280, now + 0.08);
+            gain.gain.setValueAtTime(0.04, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc.start(now);
+            osc.stop(now + 0.08);
+        }
     }
 
     playMerge(col = null, size = 4) {
@@ -64,48 +182,130 @@ class SoundEffects {
         this.init();
         const ctx = this.ctx;
         if (ctx.state === 'suspended') ctx.resume();
-
         const now = ctx.currentTime;
-        const frequencies = [261.63, 329.63, 392.00]; // C4, E4, G4 major chord for zen fusion
-        
+
         // Calculate spatial stereo pan based on merge column
         let panner = null;
         if (col !== null && ctx.createStereoPanner) {
             panner = ctx.createStereoPanner();
-            // Map col from 0..size-1 to a subtle pan range of -0.5..0.5
             const panVal = ((col / (size - 1)) * 2 - 1) * 0.5;
             panner.pan.setValueAtTime(panVal, now);
             panner.connect(ctx.destination);
         }
 
-        frequencies.forEach((freq, index) => {
+        const outDest = panner || ctx.destination;
+
+        if (this.preset === 'mech') {
+            // Mechanical switch spacebar or large keycap "thock" bottom out
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
-            const filter = ctx.createBiquadFilter();
-
-            osc.connect(filter);
-            filter.connect(gain);
-            
-            if (panner) {
-                gain.connect(panner);
-            } else {
-                gain.connect(ctx.destination);
-            }
-
+            osc.connect(gain);
+            gain.connect(outDest);
             osc.type = 'triangle';
-            osc.frequency.value = freq;
-
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(1200, now);
-            filter.frequency.exponentialRampToValueAtTime(250, now + 0.22);
-
-            gain.gain.setValueAtTime(0.0, now);
-            gain.gain.linearRampToValueAtTime(0.035, now + 0.02);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-
+            osc.frequency.setValueAtTime(100, now);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
             osc.start(now);
-            osc.stop(now + 0.22);
-        });
+            osc.stop(now + 0.035);
+
+            const oscClack = ctx.createOscillator();
+            const gainClack = ctx.createGain();
+            oscClack.connect(gainClack);
+            gainClack.connect(outDest);
+            oscClack.type = 'sine';
+            oscClack.frequency.setValueAtTime(1600, now);
+            gainClack.gain.setValueAtTime(0.03, now);
+            gainClack.gain.exponentialRampToValueAtTime(0.001, now + 0.012);
+            oscClack.start(now);
+            oscClack.stop(now + 0.012);
+
+            // Noise thock click
+            const noise = ctx.createBufferSource();
+            noise.buffer = this.getNoiseBuffer();
+            const filter = ctx.createBiquadFilter();
+            const noiseGain = ctx.createGain();
+            filter.type = 'lowpass';
+            filter.frequency.value = 1000;
+            noiseGain.gain.setValueAtTime(0.04, now);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+            noise.connect(filter);
+            filter.connect(noiseGain);
+            noiseGain.connect(outDest);
+            noise.start(now);
+            noise.stop(now + 0.03);
+        } else if (this.preset === 'cyber') {
+            // Sci-fi saw plucks with filter sweep
+            const frequencies = [130.81, 196.00, 261.63]; // C3, G3, C4
+            frequencies.forEach((freq) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const filter = ctx.createBiquadFilter();
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(outDest);
+
+                osc.type = 'sawtooth';
+                osc.frequency.value = freq;
+
+                filter.type = 'lowpass';
+                filter.Q.value = 7.0;
+                filter.frequency.setValueAtTime(2500, now);
+                filter.frequency.exponentialRampToValueAtTime(200, now + 0.25);
+
+                gain.gain.setValueAtTime(0.0, now);
+                gain.gain.linearRampToValueAtTime(0.025, now + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+                osc.start(now);
+                osc.stop(now + 0.25);
+            });
+        } else if (this.preset === 'retro') {
+            // Retro sequential fast arpeggio square waves!
+            const frequencies = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+            frequencies.forEach((freq, idx) => {
+                const delay = idx * 0.04;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(outDest);
+
+                osc.type = 'square';
+                osc.frequency.value = freq;
+
+                gain.gain.setValueAtTime(0.0, now + delay);
+                gain.gain.linearRampToValueAtTime(0.015, now + delay + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.06);
+
+                osc.start(now + delay);
+                osc.stop(now + delay + 0.06);
+            });
+        } else { // 'zen' (triangle major sweep)
+            const frequencies = [261.63, 329.63, 392.00];
+            frequencies.forEach((freq) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const filter = ctx.createBiquadFilter();
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(outDest);
+
+                osc.type = 'triangle';
+                osc.frequency.value = freq;
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1200, now);
+                filter.frequency.exponentialRampToValueAtTime(250, now + 0.22);
+
+                gain.gain.setValueAtTime(0.0, now);
+                gain.gain.linearRampToValueAtTime(0.035, now + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+                osc.start(now);
+                osc.stop(now + 0.22);
+            });
+        }
     }
 
     playWin() {
@@ -113,27 +313,74 @@ class SoundEffects {
         this.init();
         const ctx = this.ctx;
         if (ctx.state === 'suspended') ctx.resume();
-
         const now = ctx.currentTime;
-        const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
-        notes.forEach((freq, index) => {
-            const delay = index * 0.12;
+
+        if (this.preset === 'retro') {
+            const frequencies = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98, 2093.00]; // C5 to C7
+            frequencies.forEach((freq, idx) => {
+                const delay = idx * 0.06;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'square';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.0, now + delay);
+                gain.gain.linearRampToValueAtTime(0.015, now + delay + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.12);
+                osc.start(now + delay);
+                osc.stop(now + delay + 0.12);
+            });
+        } else if (this.preset === 'cyber') {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
-
             osc.connect(gain);
             gain.connect(ctx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, now);
+            osc.frequency.exponentialRampToValueAtTime(1200, now + 0.6);
+            gain.gain.setValueAtTime(0.0, now);
+            gain.gain.linearRampToValueAtTime(0.025, now + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+            osc.start(now);
+            osc.stop(now + 0.6);
+        } else if (this.preset === 'mech') {
+            // Multi rapid clicks
+            for (let i = 0; i < 4; i++) {
+                const delay = i * 0.08;
+                this.playClickAtTime(now + delay);
+            }
+        } else { // 'zen'
+            const notes = [261.63, 329.63, 392.00, 523.25];
+            notes.forEach((freq, index) => {
+                const delay = index * 0.12;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.0, now + delay);
+                gain.gain.linearRampToValueAtTime(0.035, now + delay + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.35);
+                osc.start(now + delay);
+                osc.stop(now + delay + 0.35);
+            });
+        }
+    }
 
-            osc.type = 'sine';
-            osc.frequency.value = freq;
-
-            gain.gain.setValueAtTime(0.0, now + delay);
-            gain.gain.linearRampToValueAtTime(0.035, now + delay + 0.02);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.35);
-
-            osc.start(now + delay);
-            osc.stop(now + delay + 0.35);
-        });
+    playClickAtTime(time) {
+        const ctx = this.ctx;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(160, time);
+        gain.gain.setValueAtTime(0.04, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
+        osc.start(time);
+        osc.stop(time + 0.02);
     }
 
     playAchievement() {
@@ -141,27 +388,55 @@ class SoundEffects {
         this.init();
         const ctx = this.ctx;
         if (ctx.state === 'suspended') ctx.resume();
-
         const now = ctx.currentTime;
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-        notes.forEach((freq, index) => {
-            const delay = index * 0.08;
+
+        if (this.preset === 'retro') {
+            // Retro NES coin sound
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
-
             osc.connect(gain);
             gain.connect(ctx.destination);
-
-            osc.type = 'sine';
-            osc.frequency.value = freq;
-
-            gain.gain.setValueAtTime(0.0, now + delay);
-            gain.gain.linearRampToValueAtTime(0.02, now + delay + 0.01);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.25);
-
-            osc.start(now + delay);
-            osc.stop(now + delay + 0.25);
-        });
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(987.77, now); // B5
+            osc.frequency.setValueAtTime(1318.51, now + 0.06); // E6
+            gain.gain.setValueAtTime(0.0, now);
+            gain.gain.linearRampToValueAtTime(0.02, now + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+            osc.start(now);
+            osc.stop(now + 0.22);
+        } else if (this.preset === 'cyber') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(1800, now + 0.3);
+            gain.gain.setValueAtTime(0.02, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+            osc.start(now);
+            osc.stop(now + 0.3);
+        } else if (this.preset === 'mech') {
+            // Double keyboard tap clack
+            this.playClickAtTime(now);
+            this.playClickAtTime(now + 0.08);
+        } else { // 'zen'
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, index) => {
+                const delay = index * 0.08;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.0, now + delay);
+                gain.gain.linearRampToValueAtTime(0.02, now + delay + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.25);
+                osc.start(now + delay);
+                osc.stop(now + delay + 0.25);
+            });
+        }
     }
 
     playGameOver() {
@@ -169,27 +444,64 @@ class SoundEffects {
         this.init();
         const ctx = this.ctx;
         if (ctx.state === 'suspended') ctx.resume();
-
         const now = ctx.currentTime;
-        const notes = [196.00, 164.81, 130.81]; // G3, Eb3, C3
-        notes.forEach((freq, index) => {
-            const delay = index * 0.16;
+
+        if (this.preset === 'retro') {
+            // Falling square wave pitch slide with speed modulation
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
-
             osc.connect(gain);
             gain.connect(ctx.destination);
-
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.linearRampToValueAtTime(100, now + 0.55);
+            
+            // Gain envelope
+            gain.gain.setValueAtTime(0.02, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+            osc.start(now);
+            osc.stop(now + 0.55);
+        } else if (this.preset === 'cyber') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.exponentialRampToValueAtTime(40, now + 0.6);
+            gain.gain.setValueAtTime(0.025, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+            osc.start(now);
+            osc.stop(now + 0.6);
+        } else if (this.preset === 'mech') {
+            // Single very heavy switch clack and fading echo spring hum
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
             osc.type = 'sine';
-            osc.frequency.value = freq;
-
-            gain.gain.setValueAtTime(0.0, now + delay);
-            gain.gain.linearRampToValueAtTime(0.035, now + delay + 0.02);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.45);
-
-            osc.start(now + delay);
-            osc.stop(now + delay + 0.45);
-        });
+            osc.frequency.setValueAtTime(80, now);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+            osc.start(now);
+            osc.stop(now + 0.25);
+        } else { // 'zen'
+            const notes = [196.00, 164.81, 130.81];
+            notes.forEach((freq, index) => {
+                const delay = index * 0.16;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.0, now + delay);
+                gain.gain.linearRampToValueAtTime(0.035, now + delay + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.45);
+                osc.start(now + delay);
+                osc.stop(now + delay + 0.45);
+            });
+        }
     }
 }
 
@@ -237,6 +549,7 @@ class Game2048 {
         // Settings Selectors
         this.gridSizeSelect = document.getElementById('grid-size');
         this.themeSelect = document.getElementById('theme-select');
+        this.synthSelect = document.getElementById('synth-select');
         this.themeToggleBtn = document.getElementById('btn-theme-toggle');
         
         // Overlays
@@ -328,6 +641,15 @@ class Game2048 {
             this.sounds.muted = true; // default to muted
         }
         this.updateSoundUI();
+
+        // Synth preset settings load
+        const savedSynth = localStorage.getItem('2048-synth-preset');
+        if (savedSynth && this.synthSelect) {
+            this.sounds.setPreset(savedSynth);
+            this.synthSelect.value = savedSynth;
+        } else {
+            this.sounds.setPreset('zen');
+        }
     }
 
     saveSettings() {
@@ -528,6 +850,18 @@ class Game2048 {
             this.addLog(`[SYSTEM] Theme matrix shifted to [${this.theme.toUpperCase()}]`, 'info');
             e.target.blur();
         });
+
+        // Synth Preset Select Control
+        if (this.synthSelect) {
+            this.synthSelect.addEventListener('change', (e) => {
+                const val = e.target.value;
+                this.sounds.setPreset(val);
+                localStorage.setItem('2048-synth-preset', val);
+                this.addLog(`[SYSTEM] Synthesizer preset shifted to [${val.toUpperCase()}]`, 'info');
+                this.sounds.playMerge(Math.floor(this.size / 2), this.size);
+                e.target.blur();
+            });
+        }
 
         // Theme Mode Toggle Thumb Button (Light / Dark Switch)
         this.themeToggleBtn.addEventListener('click', () => {

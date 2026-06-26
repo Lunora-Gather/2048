@@ -1,4 +1,4 @@
-/* 2048 early accessibility and preference optimizations */
+/* 2048 accessibility, runtime preference, and calm layout optimizations */
 .sr-only {
     position: absolute !important;
     width: 1px !important;
@@ -15,7 +15,7 @@ button:focus-visible,
 select:focus-visible,
 .custom-select-trigger:focus-visible,
 .custom-select-option:focus-visible {
-    outline: 2px solid rgba(var(--accent-rgb), .75);
+    outline: 2px solid rgba(var(--accent-rgb), .72);
     outline-offset: 3px;
 }
 
@@ -33,6 +33,182 @@ select:focus-visible,
     background: var(--surface);
     color: var(--text);
     box-shadow: var(--shadow-lg);
+}
+
+/* Calm visual pass: reduce the busy top-right controls and side ledger. */
+#bg-canvas {
+    opacity: 0.46;
+}
+
+body::before,
+body::after {
+    opacity: 0.7;
+}
+
+.zen-header {
+    min-height: 42px;
+}
+
+.header-controls {
+    gap: 6px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.44);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+body.dark-mode .header-controls {
+    background: rgba(15, 18, 31, 0.42);
+}
+
+.theme-toggle-btn {
+    width: 46px;
+    height: 28px;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.toggle-thumb {
+    background: rgba(255, 255, 255, 0.72) !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08) !important;
+}
+
+body.dark-mode .toggle-thumb {
+    background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.toggle-thumb .light-icon,
+.toggle-thumb .dark-icon {
+    color: var(--text-3) !important;
+}
+
+.icon-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--text-3);
+}
+
+.icon-btn:hover {
+    color: var(--text-2);
+    border-color: var(--border);
+    background: rgba(var(--accent-rgb), 0.035) !important;
+    transform: none;
+}
+
+#btn-sound-toggle.muted {
+    opacity: 0.42;
+}
+
+.drawer {
+    background: rgba(255, 255, 255, 0.58) !important;
+    border-color: rgba(15, 23, 42, 0.045) !important;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.07) !important;
+}
+
+body.dark-mode .drawer {
+    background: rgba(17, 19, 31, 0.58) !important;
+    border-color: rgba(255, 255, 255, 0.055) !important;
+}
+
+.drawer-header {
+    padding: 12px 16px;
+}
+
+.drawer-header h3 {
+    font-size: 0.92rem;
+    letter-spacing: -0.01em;
+}
+
+.drawer-header h3 i {
+    color: var(--text-3) !important;
+}
+
+.drawer-content {
+    padding: 14px;
+    gap: 14px;
+}
+
+.drawer-section .subtitle {
+    letter-spacing: 1.1px;
+    color: var(--text-3);
+}
+
+.milestones-grid {
+    gap: 7px;
+}
+
+.milestone-card {
+    min-height: 66px;
+    padding: 10px 8px;
+    background: rgba(255, 255, 255, 0.36) !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: none !important;
+}
+
+body.dark-mode .milestone-card {
+    background: rgba(255, 255, 255, 0.035) !important;
+}
+
+.milestone-card:hover:not(.locked) {
+    transform: none;
+    border-color: rgba(var(--accent-rgb), 0.16) !important;
+}
+
+.milestone-card.unlocked {
+    background: rgba(var(--accent-rgb), 0.075) !important;
+    border: 1px solid rgba(var(--accent-rgb), 0.16) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+.milestone-card.unlocked::before {
+    display: none !important;
+}
+
+.milestone-card.unlocked i,
+.milestone-card.unlocked .name {
+    color: var(--accent) !important;
+}
+
+.console-box {
+    background: rgba(255, 255, 255, 0.34) !important;
+    min-height: 128px;
+}
+
+body.dark-mode .console-box {
+    background: rgba(255, 255, 255, 0.035) !important;
+}
+
+.console-line {
+    animation-duration: 0.18s;
+}
+
+@media (min-width: 900px) {
+    .zen-wrapper {
+        align-items: flex-start;
+        gap: 22px;
+        max-width: 960px;
+    }
+
+    .drawer {
+        width: 280px !important;
+        max-height: min(640px, calc(100dvh - 56px));
+    }
+}
+
+@media (max-width: 899px) {
+    .header-controls {
+        border-radius: 16px;
+    }
+
+    .drawer {
+        width: min(320px, 86vw);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

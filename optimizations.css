@@ -1,0 +1,53 @@
+/* 2048 early accessibility and preference optimizations */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+button:focus-visible,
+select:focus-visible,
+.custom-select-trigger:focus-visible,
+.custom-select-option:focus-visible {
+    outline: 2px solid rgba(var(--accent-rgb), .75);
+    outline-offset: 3px;
+}
+
+.noscript-message {
+    position: fixed;
+    inset: 16px;
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    gap: 8px;
+    text-align: center;
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
+    }
+
+    #bg-canvas {
+        display: none;
+    }
+}
+
+body.reduce-motion #bg-canvas {
+    display: none;
+}

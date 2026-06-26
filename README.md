@@ -2,67 +2,120 @@
 
 > **A premium, high-fidelity responsive 2048 synthesis experience designed with modern aesthetics, interactive physical feedback, and a dynamic ambient soundscape.**
 >
-> 🌌 **Live Demo:** [https://lunora-gather.github.io/2048-zen-synthesis/](https://lunora-gather.github.io/2048-zen-synthesis/)
+> 🌌 **Live Demo:** [https://lunora-gather.github.io/2048/](https://lunora-gather.github.io/2048/)
 
 ---
 
-## 🎨 Masterpiece Aesthetics & Interactions (核心亮点)
+## 🎮 Play Now / 在线游玩
 
-This edition of 2048 goes far beyond the classic color grids, elevating the play session into a highly responsive Zen synthesis controller.
+打开 GitHub Pages：
 
-### 1. 🌌 Liquid Aurora Vignette (液态极光背景)
-The body background is no longer static. It is composed of three fluid radial light sources overlapping in depth. Utilizing a 25-second slow-flowing CSS keyframe rotation (`aurora-liquid`), the backdrop behaves like actual northern lights drifting and blending seamlessly in dark space.
+```text
+https://lunora-gather.github.io/2048/
+```
 
-### 🧠 Contextual Color Synchronization (网页情绪发光同步)
-The entire webpage’s neon glow, top LOGO gradient color, badge border, and the mouse hover spotlight are contextual. As you reach higher tile numbers on the matrix, the theme color shifts dynamically:
-- **2 – 64:** Science Indigo 🧪
-- **128 – 256:** Forest Emerald 🌲
-- **512:** Amber Gold ⚡
-- **1024:** Cyber Violet 🔮
-- **2048+:** Aurora Cyan 🌈
-
-### 🕸️ Interactive Constellation Particle Network (背景星座神经网络)
-A floating network of constellations is rendered directly on the background canvas. 
-- **Gravitational Mouse Hover:** Nodes nearby the cursor are repelled and glide away as the mouse brushes past.
-- **Merge Shockwaves:** Every successful tile merge triggers a slow-expanding shockwave ring on the background stars, temporarily dispersing local constellations.
-
-### ⚡ 3D Physics Board Tilt & Glassmorphism Tiles (棋盘物理弹性倾斜与毛玻璃晶圆)
-- **Board Dynamic Tilt:** Swiping or pressing directional keys tilts the board in 3d space, offering physical weight feedback before bouncing back smoothly via elastic timing curves.
-- **Glassmorphic Texture:** All game tiles are crafted with blurred frosted glass (`backdrop-filter: blur(4px)`) and double-layered specular highlights to simulate genuine premium acrylic chips.
-
-### 🎹 Web Audio API Haptic Synthesizer (禅风和弦点击声景)
-Acoustic, click-free sounds generated strictly in real-time through Web Audio oscillators:
-- **Slide click:** Low-pass filtered wooden tap.
-- **Merge pluck:** Cascade sweeps of C-Major 9th and E-Minor 7th chord harmonics.
-- **Milestone unlock:** Bright ascending Major 7th chimes.
-
-### 🎗️ 1px Chameleon Border Runner (1像素彩虹发光线)
-Unlocked milestones inside the ledger side drawer replace traditional static borders with an ultra-thin 1px neon line constantly running through a rainbow spectrum using CSS mask exclusions.
+这是一个纯静态网页游戏，不需要后端，也不需要构建步骤。
 
 ---
 
-## 🖥️ Local Running Guide (本地运行指南)
+## 🎨 Masterpiece Aesthetics & Interactions / 核心亮点
 
-This project runs 100% on standard web client technologies with zero build configurations required.
+This edition of 2048 goes far beyond the classic color grids, elevating the play session into a responsive Zen synthesis controller.
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/lunora-Gather/2048-zen-synthesis.git
-   cd 2048-zen-synthesis
-   ```
-2. **Fire up a local web server (Recommended with cache disabled):**
-   ```bash
-   npx -y http-server -p 8080 -c-1
-   ```
-3. Open `http://localhost:8080` inside your browser.
+### 🌌 Liquid Aurora Vignette / 液态极光背景
+
+The page background uses layered radial glows, subtle noise, and a canvas constellation field to create an ambient synthesis lab feeling.
+
+### 🧠 Contextual Color Synchronization / 网页情绪发光同步
+
+The theme glow, logo, board atmosphere, and milestone feedback react to the current play state and tile progression.
+
+### 🕸️ Interactive Constellation Particle Network / 背景星座神经网络
+
+A floating canvas network sits behind the game. It reacts to mouse movement and merge events with subtle spatial feedback.
+
+### ⚡ 3D Physics Board Tilt & Glassmorphism Tiles / 棋盘物理反馈与毛玻璃棋子
+
+Directional moves produce responsive board feedback, while tiles use modern glassmorphism, layered shadows, and motion cues.
+
+### 🎹 Web Audio API Haptic Synthesizer / Web Audio 合成音效
+
+The game generates sound directly through Web Audio API oscillators and filters, with selectable synth presets.
+
+### 🏆 Achievements & Activity Ledger / 成就与操作日志
+
+The side ledger tracks milestones and recent synthesis activity, with a mobile drawer layout for smaller screens.
 
 ---
 
-## 🛠️ Technological Stack (技术栈)
-- **Core Logic:** Vanilla JavaScript (ES6+ modular object-oriented control flow)
-- **Fluid Renderer:** HTML5 2D Canvas (Constellation particle engine, spatial shockwave computations)
-- **Styling Sheet:** Modern CSS3 (CSS Variables, Flexbox, 3D preserves, mask compositing, hardware accelerated Keyframes)
-- **Acoustic Synth:** Web Audio API (Realtime oscillator wave envelopes, lowpass filters, feedback delay line loops)
+## 🕹️ Controls / 操作方式
+
+| Action | Keyboard / Touch |
+| --- | --- |
+| Move tiles | Arrow keys / Swipe |
+| Restart | Restart Grid button |
+| Undo | Undo Step button |
+| Change grid size | 4 × 4 / 5 × 5 / 6 × 6 selector |
+| Theme | Theme selector |
+| Sound | Sound toggle and synth selector |
+| Achievements | Award button / side drawer |
+
+---
+
+## 🖥️ Local Running Guide / 本地运行指南
+
+This project runs on standard static web technologies with zero build configuration.
+
+```bash
+git clone https://github.com/Lunora-Gather/2048.git
+cd 2048
+npx -y http-server -p 8080 -c-1
+```
+
+Then open:
+
+```text
+http://localhost:8080
+```
+
+You can also open `index.html` directly in a browser, but a local server is recommended for consistent asset behavior.
+
+---
+
+## 🚀 GitHub Pages Deployment / 部署说明
+
+The repository includes `.github/workflows/pages.yml`.
+
+When `main` receives a push, GitHub Actions uploads the static site and deploys it to:
+
+```text
+https://lunora-gather.github.io/2048/
+```
+
+Manual deployment is also available from **Actions → pages-build-deployment → Run workflow**.
+
+---
+
+## 🛠️ Technology Stack / 技术栈
+
+- **Core Logic:** Vanilla JavaScript
+- **Rendering:** HTML5 Canvas background effects + DOM-based 2048 board
+- **Styling:** CSS variables, responsive layout, glassmorphism, 3D transforms
+- **Audio:** Web Audio API procedural synth effects
+- **Deployment:** GitHub Actions + GitHub Pages static hosting
+
+---
+
+## 📁 Project Files / 项目文件
+
+```text
+.
+├── .github/workflows/pages.yml   # GitHub Pages static deployment
+├── index.html                    # Static page entry
+├── style.css                     # Visual system and responsive layout
+├── script.js                     # Game logic, sound, canvas effects
+└── README.md                     # Project documentation
+```
 
 ---
 

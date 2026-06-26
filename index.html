@@ -2,7 +2,20 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="2048: Zen Synthesis 是一个可直接在浏览器游玩的高级响应式 2048 网页游戏，包含玻璃拟态棋盘、动态背景、合成音效、成就系统和移动端适配。">
+    <meta name="keywords" content="2048, Zen Synthesis, browser game, puzzle game, GitHub Pages, JavaScript game">
+    <meta name="theme-color" content="#0a0c14">
+    <meta name="color-scheme" content="light dark">
+    <meta property="og:title" content="2048: Zen Synthesis">
+    <meta property="og:description" content="Play a premium responsive 2048 synthesis experience directly in the browser.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://lunora-gather.github.io/2048/">
+    <meta property="og:site_name" content="2048: Zen Synthesis">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="2048: Zen Synthesis">
+    <meta name="twitter:description" content="A premium responsive 2048 browser game with dynamic visuals and Web Audio synthesis.">
+    <link rel="canonical" href="https://lunora-gather.github.io/2048/">
     <title>2048: Zen Synthesis</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,10 +23,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=30">
+    <link rel="stylesheet" href="style.css?v=31">
 </head>
 <body>
-    <canvas id="bg-canvas"></canvas>
+    <noscript>
+        <div class="noscript-message">
+            <strong>2048: Zen Synthesis needs JavaScript.</strong>
+            <span>请在浏览器中启用 JavaScript 后重新打开页面。</span>
+        </div>
+    </noscript>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
     <div class="zen-wrapper">
         <!-- 左侧游戏主区域 -->
         <div class="zen-container">
@@ -26,7 +45,7 @@
                 
                 <div class="header-controls">
                     <!-- 暗黑/明亮模式切换 -->
-                    <button id="btn-theme-toggle" class="theme-toggle-btn" title="切换显示模式">
+                    <button id="btn-theme-toggle" class="theme-toggle-btn" title="切换显示模式" aria-label="切换显示模式">
                         <div class="toggle-track">
                             <div class="toggle-thumb">
                                 <i class="fa-solid fa-moon dark-icon"></i>
@@ -36,19 +55,19 @@
                     </button>
 
                     <!-- 音效切换 -->
-                    <button id="btn-sound-toggle" class="icon-btn" title="切换音效">
+                    <button id="btn-sound-toggle" class="icon-btn" title="切换音效" aria-label="切换音效">
                         <i class="fa-solid fa-volume-xmark"></i>
                     </button>
 
                     <!-- 手机端成就/日志抽屉触发按钮 -->
-                    <button id="btn-achievements-trigger" class="icon-btn" title="查看成就与日志">
+                    <button id="btn-achievements-trigger" class="icon-btn" title="查看成就与日志" aria-label="查看成就与日志">
                         <i class="fa-solid fa-award"></i>
                     </button>
                 </div>
             </header>
 
             <!-- 得分与基本控制 -->
-            <section class="display-deck">
+            <section class="display-deck" aria-label="Score and settings">
                 <div class="score-container">
                     <div class="score-card current">
                         <span class="label">SCORE</span>
@@ -63,7 +82,7 @@
 
                 <div class="quick-settings">
                     <div class="select-pill">
-                        <select id="grid-size">
+                        <select id="grid-size" aria-label="选择棋盘尺寸">
                             <option value="4" selected>4 × 4</option>
                             <option value="5">5 × 5</option>
                             <option value="6">6 × 6</option>
@@ -72,7 +91,7 @@
                     </div>
 
                     <div class="select-pill">
-                        <select id="theme-select">
+                        <select id="theme-select" aria-label="选择视觉主题">
                             <option value="cyberpunk" selected>Cyberpunk</option>
                             <option value="classic">Retro Gold</option>
                             <option value="pastel">Pastel Dream</option>
@@ -82,7 +101,7 @@
                     </div>
 
                     <div class="select-pill">
-                        <select id="synth-select">
+                        <select id="synth-select" aria-label="选择音效预设">
                             <option value="zen" selected>Zen Chimes</option>
                             <option value="cyber">Cyber Pluck</option>
                             <option value="retro">Retro Synth</option>
@@ -94,9 +113,9 @@
             </section>
 
             <!-- 棋盘区域 -->
-            <main class="board-deck">
+            <main class="board-deck" aria-label="2048 board">
                 <div class="board-frame">
-                    <div id="board" class="matrix-board size-4">
+                    <div id="board" class="matrix-board size-4" role="grid" aria-label="2048 grid">
                         <!-- 动态生成的网格底板 -->
                     </div>
                     <div id="tiles-container" class="tiles-container"></div>
@@ -126,7 +145,7 @@
             </main>
 
             <!-- 系统参数数据 -->
-            <section class="stats-deck">
+            <section class="stats-deck" aria-label="Game statistics">
                 <div class="stat-pill">
                     <span class="label"><i class="fa-regular fa-clock"></i> UPTIME</span>
                     <span id="stat-time" class="value">00:00</span>
@@ -153,10 +172,10 @@
         </div>
 
         <!-- 右侧账本区（包含成就与日志） -->
-        <div id="drawer-panel" class="drawer">
+        <div id="drawer-panel" class="drawer" aria-label="System ledger">
             <div class="drawer-header">
                 <h3><i class="fa-solid fa-award"></i> System Ledger</h3>
-                <button id="btn-drawer-close" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+                <button id="btn-drawer-close" class="close-btn" aria-label="关闭成就与日志"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
             <div class="drawer-content">
@@ -197,6 +216,6 @@
     <!-- 背景遮罩层，仅移动端抽屉激活时显示 -->
     <div id="drawer-backdrop" class="drawer-backdrop"></div>
 
-    <script src="script.js?v=30"></script>
+    <script src="script.js?v=31"></script>
 </body>
 </html>

@@ -1,15 +1,14 @@
 /* Mobile-only responsive polish. Desktop layout is intentionally untouched. */
 @media (max-width: 899px) {
     :root {
-        --mobile-safe-x: clamp(12px, 3.8vw, 18px);
-        --mobile-gap: clamp(6px, 1dvh, 9px);
+        --mobile-safe-x: clamp(14px, 4vw, 20px);
+        --mobile-gap: clamp(5px, 0.85dvh, 8px);
         --mobile-board-limit: calc(100vw - (var(--mobile-safe-x) * 2));
-        --board-size: min(var(--mobile-board-limit), 55dvh, 420px);
-        --board-padding: clamp(8px, 2.2vw, 12px);
-        --grid-gap-3: clamp(8px, 2.1vw, 11px);
-        --grid-gap-4: clamp(7px, 1.7vw, 10px);
-        --grid-gap-5: clamp(5px, 1.3vw, 8px);
-        --grid-gap-6: clamp(4px, 1vw, 6px);
+        --board-size: min(var(--mobile-board-limit), 43dvh, 380px);
+        --board-padding: clamp(7px, 1.9vw, 10px);
+        --grid-gap-4: clamp(6px, 1.45vw, 9px);
+        --grid-gap-5: clamp(4px, 1.1vw, 7px);
+        --grid-gap-6: clamp(3px, 0.85vw, 5px);
     }
 
     html,
@@ -30,7 +29,7 @@
     .zen-wrapper,
     .zen-container {
         width: 100% !important;
-        max-width: 430px !important;
+        max-width: 410px !important;
         min-width: 0 !important;
         margin-left: auto;
         margin-right: auto;
@@ -41,13 +40,14 @@
         gap: var(--mobile-gap) !important;
     }
 
-    .zen-container {
+    .zen-container,
+    .display-deck {
         gap: var(--mobile-gap) !important;
     }
 
     .zen-header {
         width: 100%;
-        min-height: 32px !important;
+        min-height: 30px !important;
         gap: 10px;
     }
 
@@ -57,89 +57,85 @@
     }
 
     .logo {
-        font-size: clamp(1.58rem, 7.8vw, 2.08rem) !important;
-        letter-spacing: -0.06em;
+        font-size: clamp(1.5rem, 7.2vw, 1.95rem) !important;
+        letter-spacing: -0.055em;
     }
 
     .badge {
-        min-width: 34px !important;
-        height: 17px !important;
-        padding: 0 7px !important;
-        font-size: 0.54rem !important;
+        min-width: 32px !important;
+        height: 16px !important;
+        padding: 0 6px !important;
+        font-size: 0.52rem !important;
     }
 
     .header-controls {
         flex: 0 0 auto;
         gap: 4px !important;
-        padding: 4px 5px !important;
-        box-shadow: 0 5px 15px rgba(15, 23, 42, 0.035) !important;
+        padding: 3px 5px !important;
+        box-shadow: 0 5px 15px rgba(15, 23, 42, 0.03) !important;
     }
 
     .theme-toggle-btn {
-        width: 50px !important;
-        min-width: 50px !important;
-        height: 28px !important;
-        min-height: 28px !important;
+        width: 48px !important;
+        min-width: 48px !important;
+        height: 27px !important;
+        min-height: 27px !important;
     }
 
     .toggle-track {
-        width: 44px !important;
-        min-width: 44px !important;
-        height: 22px !important;
-        min-height: 22px !important;
+        width: 42px !important;
+        min-width: 42px !important;
+        height: 21px !important;
+        min-height: 21px !important;
     }
 
     .toggle-thumb {
-        width: 20px !important;
-        min-width: 20px !important;
-        height: 20px !important;
-        min-height: 20px !important;
+        width: 19px !important;
+        min-width: 19px !important;
+        height: 19px !important;
+        min-height: 19px !important;
     }
 
     body.dark-mode .toggle-thumb {
-        left: 22px !important;
+        left: 21px !important;
     }
 
     .icon-btn {
-        width: 28px !important;
-        min-width: 28px !important;
-        height: 28px !important;
-        min-height: 28px !important;
-    }
-
-    .display-deck {
-        gap: var(--mobile-gap) !important;
+        width: 27px !important;
+        min-width: 27px !important;
+        height: 27px !important;
+        min-height: 27px !important;
     }
 
     .score-container,
     .quick-settings,
     .stats-deck,
     .action-deck {
-        gap: clamp(6px, 1.7vw, 9px) !important;
+        gap: clamp(6px, 1.6vw, 8px) !important;
     }
 
     .score-card,
     .stat-pill,
     .btn-secondary,
     .custom-select-trigger {
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.035) !important;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.032) !important;
     }
 
     .score-card {
         min-width: 0;
-        padding: clamp(6px, 1.7vw, 8px) clamp(10px, 2.8vw, 13px) !important;
-        border-radius: clamp(13px, 3.3vw, 17px) !important;
+        padding: clamp(5px, 1.45vw, 7px) clamp(10px, 2.6vw, 12px) !important;
+        border-radius: clamp(12px, 3.1vw, 16px) !important;
     }
 
     .score-card .label {
         margin-bottom: 0 !important;
-        font-size: clamp(0.52rem, 1.8vw, 0.6rem) !important;
-        letter-spacing: clamp(0.9px, 0.34vw, 1.35px) !important;
+        font-size: clamp(0.5rem, 1.7vw, 0.58rem) !important;
+        letter-spacing: clamp(0.85px, 0.32vw, 1.25px) !important;
     }
 
     .score-card .value {
-        font-size: clamp(1.12rem, 5.5vw, 1.5rem) !important;
-        line-height: 1.05 !important;
+        font-size: clamp(1.04rem, 5.1vw, 1.38rem) !important;
+        line-height: 1.04 !important;
     }
 
     .quick-settings {
@@ -156,20 +152,10 @@
     }
 
     .custom-select-trigger {
-        min-height: clamp(38px, 9.4vw, 43px);
-        padding: 7px clamp(12px, 3.2vw, 15px) !important;
-        font-size: clamp(0.8rem, 3.55vw, 0.94rem) !important;
-        border-radius: clamp(12px, 3.1vw, 16px) !important;
-    }
-
-    .custom-select-options {
-        max-height: min(42dvh, 260px);
-        overflow-y: auto !important;
-    }
-
-    .custom-select-option {
-        padding: 10px 14px !important;
-        font-size: 0.88rem !important;
+        min-height: clamp(34px, 8.3vw, 39px) !important;
+        padding: 6px clamp(11px, 3vw, 14px) !important;
+        font-size: clamp(0.76rem, 3.25vw, 0.88rem) !important;
+        border-radius: clamp(11px, 3vw, 15px) !important;
     }
 
     .board-deck,
@@ -181,12 +167,8 @@
 
     .board-frame {
         height: var(--board-size) !important;
-        border-radius: clamp(18px, 5vw, 25px) !important;
-        box-shadow: 0 7px 20px rgba(15, 23, 42, 0.07) !important;
-    }
-
-    body.dark-mode .board-frame {
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.26) !important;
+        border-radius: clamp(17px, 4.6vw, 23px) !important;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06) !important;
     }
 
     .matrix-board,
@@ -196,140 +178,75 @@
 
     .grid-cell,
     .tile-inner {
-        border-radius: clamp(8px, 2vw, 13px) !important;
+        border-radius: clamp(7px, 1.8vw, 12px) !important;
     }
 
     .matrix-board.size-6 .grid-cell,
     .board-frame.size-6 .tile-inner {
-        border-radius: clamp(6px, 1.55vw, 9px) !important;
+        border-radius: clamp(5px, 1.3vw, 8px) !important;
     }
 
-    .board-frame.size-4 .tile-inner {
-        font-size: clamp(1.36rem, 8vw, 1.92rem) !important;
-    }
-
-    .board-frame.size-5 .tile-inner {
-        font-size: clamp(0.98rem, 5.6vw, 1.38rem) !important;
-    }
-
-    .board-frame.size-6 .tile-inner {
-        font-size: clamp(0.8rem, 4.65vw, 1.1rem) !important;
-    }
-
-    .board-frame.size-6 .tile[data-value="128"] .tile-inner,
-    .board-frame.size-6 .tile[data-value="256"] .tile-inner,
-    .board-frame.size-6 .tile[data-value="512"] .tile-inner {
-        font-size: clamp(0.7rem, 4vw, 0.95rem) !important;
-    }
-
-    .board-frame.size-6 .tile[data-value="1024"] .tile-inner,
-    .board-frame.size-6 .tile[data-value="2048"] .tile-inner {
-        font-size: clamp(0.58rem, 3.3vw, 0.82rem) !important;
-    }
-
-    .stats-deck {
-        align-items: stretch;
-    }
+    .board-frame.size-4 .tile-inner { font-size: clamp(1.25rem, 7.3vw, 1.75rem) !important; }
+    .board-frame.size-5 .tile-inner { font-size: clamp(0.88rem, 5vw, 1.22rem) !important; }
+    .board-frame.size-6 .tile-inner { font-size: clamp(0.7rem, 4.05vw, 0.96rem) !important; }
 
     .stat-pill {
         min-width: 0;
-        padding: clamp(5px, 1.45vw, 7px) clamp(5px, 1.6vw, 8px) !important;
-        border-radius: clamp(13px, 3.3vw, 17px) !important;
+        padding: clamp(4px, 1.25vw, 6px) clamp(5px, 1.45vw, 7px) !important;
+        border-radius: clamp(12px, 3.1vw, 16px) !important;
     }
 
     .stat-pill .label {
-        max-width: 100%;
         justify-content: center;
         gap: 3px !important;
-        font-size: clamp(0.5rem, 2.25vw, 0.6rem) !important;
-        letter-spacing: clamp(0.35px, 0.22vw, 0.75px) !important;
+        font-size: clamp(0.47rem, 2.05vw, 0.56rem) !important;
         white-space: nowrap;
     }
 
     .stat-pill .value {
-        font-size: clamp(0.76rem, 3.8vw, 0.9rem) !important;
-        line-height: 1.1 !important;
+        font-size: clamp(0.7rem, 3.45vw, 0.82rem) !important;
+        line-height: 1.08 !important;
     }
 
     .btn {
-        min-height: clamp(40px, 9.7vw, 46px);
-        padding: 7px clamp(10px, 2.8vw, 15px) !important;
-        border-radius: clamp(13px, 3.3vw, 17px) !important;
-        font-size: clamp(0.76rem, 3.4vw, 0.88rem) !important;
-        line-height: 1.12;
-    }
-
-    .btn i {
-        flex: 0 0 auto;
-    }
-
-    #btn-undo {
-        flex-wrap: wrap;
-        row-gap: 2px;
-    }
-
-    .drawer {
-        width: min(330px, 88vw) !important;
+        min-height: clamp(36px, 8.6vw, 41px) !important;
+        padding: 6px clamp(10px, 2.6vw, 14px) !important;
+        border-radius: clamp(12px, 3.1vw, 16px) !important;
+        font-size: clamp(0.72rem, 3.1vw, 0.82rem) !important;
+        line-height: 1.1;
     }
 }
 
 @media (max-width: 899px) and (max-height: 760px) {
     :root {
-        --mobile-safe-x: clamp(12px, 3.6vw, 16px);
-        --mobile-gap: 6px;
-        --board-size: min(calc(100vw - (var(--mobile-safe-x) * 2)), 51dvh, 395px);
-        --board-padding: clamp(8px, 2vw, 11px);
-        --grid-gap-4: 7px;
-        --grid-gap-5: 5px;
-        --grid-gap-6: 4px;
+        --mobile-safe-x: clamp(14px, 3.8vw, 18px);
+        --mobile-gap: 5px;
+        --board-size: min(calc(100vw - (var(--mobile-safe-x) * 2)), 40dvh, 350px);
+        --board-padding: clamp(7px, 1.8vw, 10px);
+        --grid-gap-6: 3px;
     }
 
-    body {
-        padding-top: max(8px, env(safe-area-inset-top)) !important;
-        padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
+    .zen-wrapper,
+    .zen-container {
+        max-width: 390px !important;
     }
 
-    .zen-header {
-        min-height: 30px !important;
-    }
-
-    .custom-select-trigger {
-        min-height: 36px;
-    }
-
-    .score-card,
-    .stat-pill {
-        padding-top: 5px !important;
-        padding-bottom: 5px !important;
-    }
-
-    .btn {
-        min-height: 40px;
-    }
+    .custom-select-trigger { min-height: 33px !important; }
+    .btn { min-height: 35px !important; }
 }
 
 @media (max-width: 380px) {
     :root {
-        --mobile-safe-x: 12px;
-        --board-size: min(calc(100vw - 24px), 50dvh, 360px);
+        --mobile-safe-x: 14px;
+        --board-size: min(calc(100vw - 28px), 39dvh, 330px);
     }
 
-    .badge {
-        display: none !important;
+    .zen-wrapper,
+    .zen-container {
+        max-width: 360px !important;
     }
 
-    .header-controls {
-        gap: 3px !important;
-        padding-inline: 5px !important;
-    }
-
-    .theme-toggle-btn {
-        width: 46px !important;
-        min-width: 46px !important;
-    }
-
-    .icon-btn {
-        width: 27px !important;
-        min-width: 27px !important;
-    }
+    .badge { display: none !important; }
+    .theme-toggle-btn { width: 44px !important; min-width: 44px !important; }
+    .icon-btn { width: 26px !important; min-width: 26px !important; }
 }

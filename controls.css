@@ -142,3 +142,26 @@ body:not(.dark-mode) .toggle-thumb .dark-icon {
 #btn-sound-toggle.muted {
     opacity: 0.46 !important;
 }
+
+.build-version {
+    position: fixed;
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 20;
+    pointer-events: none;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.42);
+    border: 1px solid rgba(15, 23, 42, 0.045);
+    color: rgba(30, 41, 59, 0.34);
+    font: 600 10px/1.2 "JetBrains Mono", monospace;
+    letter-spacing: 0.02em;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+body.dark-mode .build-version {
+    background: rgba(15, 18, 31, 0.38);
+    border-color: rgba(255, 255, 255, 0.05);
+    color: rgba(226, 232, 240, 0.38);
+}
